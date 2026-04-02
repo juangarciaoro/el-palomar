@@ -6,14 +6,15 @@ const DAYS_ES   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','D
 const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
 function getWeekDates(offset) {
-  const now    = new Date();
-  const day    = now.getDay();
-  const diff   = (day === 0 ? -6 : 1 - day);
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diff + offset * 7);
-  return Array.from({length: 7}, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+  const now = new Date();
+  const day = now.getDay(); // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
+  // Días desde el martes anterior (incluyendo hoy si es martes)
+  const diffToTuesday = (day + 5) % 7; // Mar=0, Mié=1, …, Lun=6
+  const tuesday = new Date(now);
+  tuesday.setDate(now.getDate() - diffToTuesday + offset * 7);
+  return Array.from({length: 8}, (_, i) => {
+    const d = new Date(tuesday);
+    d.setDate(tuesday.getDate() + i);
     return d;
   });
 }
@@ -35,37 +36,79 @@ function renderComidas() {
   else if (weekOffset === -1) lbl.textContent = 'Semana pasada';
   else {
     const d = dates[0];
-    lbl.textContent = `${d.getDate()} ${MONTHS_ES[d.getMonth()]}`;
+    lbl.textContent = d.getDate() + ' ' + MONTHS_ES[d.getMonth()];
   }
 
-  document.getElementById('comidas-grid').innerHTML = dates.map(d => {
-    const key   = dateKey(d);
-    const data  = comidasData[key] || {};
-    return `
-    <div class="day-card ${isToday(d) ? 'today' : ''}">
-      <div class="day-header">
-        <span class="day-name">${DAYS_ES[d.getDay()===0?6:d.getDay()-1]}</span>
-        <span class="day-date">${d.getDate()} ${MONTHS_ES[d.getMonth()]}</span>
-        ${isToday(d) ? '<span class="today-badge">Hoy</span>' : ''}
-      </div>
-      <div class="meals-row">
-        <div class="meal-slot" onclick="openMealEdit('${key}','comida')">
-          <div class="meal-type">🌞 Comida</div>
-          ${data.comida
-            ? `<div class="meal-text">${data.comida}</div>${data.comidaNotes?`<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${data.comidaNotes}</div>`:''}`
-            : `<div class="meal-empty">Sin planear</div>`}
-          <span class="meal-add-icon">✏️</span>
-        </div>
-        <div class="meal-slot" onclick="openMealEdit('${key}','cena')">
-          <div class="meal-type">🌙 Cena</div>
-          ${data.cena
-            ? `<div class="meal-text">${data.cena}</div>${data.cenaNotes?`<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${data.cenaNotes}</div>`:''}`
-            : `<div class="meal-empty">Sin planear</div>`}
-          <span class="meal-add-icon">✏️</span>
-        </div>
-      </div>
-    </div>`;
+  // ── MOBILE: día-cards apilados (estructura original) ─────────
+  const mobileHtml = dates.map(function(d, idx) {
+    const key        = dateKey(d);
+    const data       = comidasData[key] || {};
+    const showComida = idx > 0;
+    const showCena   = idx < dates.length - 1;
+    const dayName    = DAYS_ES[d.getDay()===0?6:d.getDay()-1];
+    return '<div class="day-card ' + (isToday(d) ? 'today' : '') + '">' +
+      '<div class="day-header">' +
+        '<span class="day-name">' + dayName + '</span>' +
+        '<span class="day-date">' + d.getDate() + ' ' + MONTHS_ES[d.getMonth()] + '</span>' +
+        (isToday(d) ? '<span class="today-badge">Hoy</span>' : '') +
+      '</div>' +
+      '<div class="meals-row">' +
+        (showComida ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
+          + '<div class="meal-type">🌞 Comida</div>'
+          + (data.comida
+            ? '<div class="meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.comidaNotes + '</div>' : '')
+            : '<div class="meal-empty">Sin planear</div>')
+          + '<span class="meal-add-icon">✏️</span></div>' : '') +
+        (showCena ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
+          + '<div class="meal-type">🌙 Cena</div>'
+          + (data.cena
+            ? '<div class="meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.cenaNotes + '</div>' : '')
+            : '<div class="meal-empty">Sin planear</div>')
+          + '<span class="meal-add-icon">✏️</span></div>' : '') +
+      '</div></div>';
   }).join('');
+
+  // ── DESKTOP: tabla 8 columnas (1 placeholder + 8 días) ───────
+  const dayHeads = dates.map(function(d) {
+    const dayName = DAYS_ES[d.getDay()===0?6:d.getDay()-1];
+    return '<div class="cm-day-head ' + (isToday(d) ? 'today' : '') + '">' +
+      '<span class="cm-day-name">' + dayName + '</span>' +
+      '<span class="cm-day-date">' + d.getDate() + ' ' + MONTHS_ES[d.getMonth()] + '</span>' +
+      (isToday(d) ? '<span class="today-badge">Hoy</span>' : '') +
+    '</div>';
+  }).join('');
+
+  const comidaSlots = dates.map(function(d, idx) {
+    if (idx === 0) return '<div class="cm-slot cm-slot-blank"></div>';
+    const key  = dateKey(d);
+    const data = comidasData[key] || {};
+    return '<div class="cm-slot ' + (isToday(d) ? 'today' : '') + '" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
+      + (data.comida
+          ? '<div class="cm-meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div class="cm-meal-notes">' + data.comidaNotes + '</div>' : '')
+          : '<div class="cm-meal-empty">Sin planear</div>')
+      + '<span class="meal-add-icon">✏️</span></div>';
+  }).join('');
+
+  const cenaSlots = dates.map(function(d, idx) {
+    if (idx === dates.length - 1) return '<div class="cm-slot cm-slot-blank"></div>';
+    const key  = dateKey(d);
+    const data = comidasData[key] || {};
+    return '<div class="cm-slot ' + (isToday(d) ? 'today' : '') + '" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
+      + (data.cena
+          ? '<div class="cm-meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div class="cm-meal-notes">' + data.cenaNotes + '</div>' : '')
+          : '<div class="cm-meal-empty">Sin planear</div>')
+      + '<span class="meal-add-icon">✏️</span></div>';
+  }).join('');
+
+  const desktopHtml =
+    '<div class="cm-table">' +
+      '<div class="cm-label-cell"></div>' + dayHeads +
+      '<div class="cm-row-label"><span class="cm-row-emoji">🌞</span><span class="cm-row-text">Comida</span></div>' + comidaSlots +
+      '<div class="cm-row-label"><span class="cm-row-emoji">🌙</span><span class="cm-row-text">Cena</span></div>' + cenaSlots +
+    '</div>';
+
+  document.getElementById('comidas-grid').innerHTML =
+    '<div class="comidas-mobile">' + mobileHtml + '</div>' + desktopHtml;
 }
 
 window.changeWeek = function(dir) { weekOffset += dir; renderComidas(); };

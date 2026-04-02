@@ -114,6 +114,14 @@ window.onboardSelectPalette = function(index) {
   renderColorSwatches('onboard-swatches', index, 'onboardSelectPalette');
 };
 
+window.cancelOnboarding = async function() {
+  closeModal('modal-onboarding');
+  try { await firebase.auth().signOut(); } catch(e) {}
+  firebaseUser  = null;
+  userProfile   = null;
+  document.getElementById('login-screen').style.display = '';
+};
+
 window.saveOnboarding = async function() {
   const name = document.getElementById('onboard-name').value.trim();
   if (!name) { showToast('Introduce tu nombre'); return; }

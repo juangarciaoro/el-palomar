@@ -539,6 +539,9 @@ ul { list-style: none; }
 }
 .meal-slot:hover .meal-add-icon { color: var(--accent); }
 
+/* Desktop table hidden by default (mobile-first) */
+.cm-table { display: none; }
+
 /* ─── TAREAS ──────────────────────────────────────────── */
 .tareas-filters {
   display: flex; gap: 0.4rem;
@@ -981,9 +984,61 @@ ul { list-style: none; }
   }
   .section-title { font-size: 1.65rem; }
 
-  /* Comidas: 2 columnas */
-  #comidas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-  #comidas-grid .day-card { margin-bottom: 0; }
+  /* Comidas: tabla 8 columnas en desktop */
+  .comidas-mobile { display: none; }
+  #comidas-grid { overflow-x: auto; }
+  .cm-table {
+    display: grid;
+    grid-template-columns: 48px repeat(8, minmax(110px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    min-width: 700px;
+  }
+  .cm-label-cell, .cm-day-head, .cm-row-label, .cm-slot {
+    background: var(--surface);
+    padding: 0.5rem 0.45rem;
+  }
+  .cm-label-cell, .cm-day-head, .cm-row-label {
+    background: var(--surface2);
+  }
+  .cm-day-head {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.12rem; text-align: center;
+  }
+  .cm-day-head.today {
+    background: var(--accent-pale); color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+  .cm-day-name { font-size: 0.78rem; font-weight: 600; text-transform: capitalize; }
+  .cm-day-date { font-size: 0.67rem; color: var(--text-muted); }
+  .cm-day-head.today .cm-day-date { color: var(--accent); }
+  .cm-day-head .today-badge { font-size: 0.58rem; margin-top: 0.1rem; }
+  .cm-row-label {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 0.15rem; text-align: center;
+  }
+  .cm-row-emoji { font-size: 0.95rem; }
+  .cm-row-text {
+    font-size: 0.6rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+  .cm-slot {
+    position: relative; min-height: 72px;
+    cursor: pointer; transition: var(--transition);
+  }
+  .cm-slot:hover { background: var(--accent-pale); }
+  .cm-slot.today { border-bottom: 2px solid var(--accent); }
+  .cm-slot-blank {
+    background: var(--surface2) !important;
+    cursor: default;
+  }
+  .cm-meal-text { font-size: 0.83rem; font-weight: 500; line-height: 1.3; }
+  .cm-meal-notes { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+  .cm-meal-empty { font-size: 0.75rem; color: var(--border); font-style: italic; }
+  .cm-slot .meal-add-icon { position: absolute; bottom: 4px; right: 6px; font-size: 0.85rem; }
 
   /* Filtros de tareas: wrap en desktop */
   .tareas-filters { flex-wrap: wrap; overflow-x: visible; }
@@ -1008,7 +1063,6 @@ ul { list-style: none; }
 @media (min-width: 1100px) {
   #bottom-nav { width: 260px; }
   #main-content { padding: 2.5rem 3rem 2rem; }
-  #comidas-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ─── DASHBOARD ───────────────────────────────────── */
