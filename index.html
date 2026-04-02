@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>El Palomar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ─── LOGIN ───────────────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-hero">
+      <div class="login-logo">
+        <div class="icon">🏡</div>
+        <h1>El Palomar</h1>
+        <p>Organiza el día a día juntos</p>
+      </div>
+      <div class="login-hero-features">
+        <div class="login-feature">🛒 Lista de la compra compartida</div>
+        <div class="login-feature">🍽️ Planificador de menú semanal</div>
+        <div class="login-feature">✅ Gestión de tareas del hogar</div>
+        <div class="login-feature">📅 Calendario familiar integrado</div>
+      </div>
+    </div>
+    <div class="login-panel">
+      <div class="login-card">
+        <h2>Accede a tu hogar</h2>
+        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:0.25rem">
+          Usa tu cuenta de Google para sincronizar con el resto de la familia y conectar el calendario.
+        </p>
+        <button class="btn-google" onclick="loginWithGoogle()">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+          Continuar con Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TOPBAR ──────────────────────────────────────── -->
+  <header id="topbar">
+    <div class="topbar-title">
+      🏡 El Palomar
+      <span class="dot" id="sync-dot" title="Sincronizando…"></span>
+    </div>
+    <div class="user-pill">
+      <span id="topbar-user">—</span>
+      <button onclick="openColorPicker()" title="Cambiar color" style="font-size:0.85rem;padding:0;opacity:0.7">🎨</button>
+      <button onclick="logout()" title="Salir">✕</button>
+    </div>
+  </header>
+
+  <!-- ─── MAIN ────────────────────────────────────────── -->
+  <main id="main-content" style="display:none">
+
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+      <div class="dash-greeting">
+        <div class="dash-greeting-name" id="dash-hi">Hola 👋</div>
+        <div class="dash-greeting-date" id="dash-date"></div>
+      </div>
+
+      <div class="dash-widgets">
+        <div class="dash-widget clickable" onclick="switchView('compra')">
+          <span class="dash-widget-icon">🛒</span>
+          <div class="dash-widget-value" id="dw-compra">0</div>
+          <div class="dash-widget-label">Pendientes</div>
+          <div class="dash-widget-sub">lista de compra</div>
+        </div>
+        <div class="dash-widget clickable" onclick="switchView('tareas')">
+          <span class="dash-widget-icon">✅</span>
+          <div class="dash-widget-value" id="dw-tareas">0</div>
+          <div class="dash-widget-label">Tareas</div>
+          <div class="dash-widget-sub">sin completar</div>
+        </div>
+        <div class="dash-widget clickable" onclick="switchView('calendario')">
+          <span class="dash-widget-icon">📅</span>
+          <div class="dash-widget-value" id="dw-cal3d">0</div>
+          <div class="dash-widget-label">Eventos</div>
+          <div class="dash-widget-sub">próximos 7 días</div>
+        </div>
+      </div>
+
+      <div class="dash-section-title">🍽️ Menú de hoy</div>
+      <div class="dash-card" id="dash-menu-today">
+        <div class="dash-menu-grid">
+          <div class="dash-menu-slot">
+            <div class="dash-menu-type">🌞 Comida</div>
+            <div id="dash-menu-comida" class="dash-menu-empty">Sin planear</div>
+          </div>
+          <div class="dash-menu-slot">
+            <div class="dash-menu-type">🌙 Cena</div>
+            <div id="dash-menu-cena" class="dash-menu-empty">Sin planear</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-section-title">🚨 Tareas prioritarias</div>
+      <div class="dash-card" id="dash-tareas-list"></div>
+
+      <div class="dash-section-title">📅 Próximos 7 días</div>
+      <div class="dash-card" id="dash-cal3d-list"></div>
+
+      <div class="dash-section-title">🛒 Progreso de la compra</div>
+      <div class="dash-card" style="padding:1rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem">
+          <span style="font-size:0.88rem;font-weight:500" id="dash-compra-label">0 de 0 productos</span>
+          <span style="font-size:0.82rem;color:var(--accent);font-weight:600" id="dash-compra-pct">0%</span>
+        </div>
+        <div class="dash-progress-bar"><div class="dash-progress-fill" id="dash-compra-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- COMPRA -->
+    <div id="view-compra" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Lista de la compra</div>
+          <div class="section-sub" id="compra-sub">0 productos pendientes</div>
+        </div>
+        <button class="btn-primary" style="padding:0.5rem 0.85rem;font-size:0.85rem" onclick="openAddItem()">+ Añadir</button>
+      </div>
+      <div id="config-banner-compra"></div>
+      <div id="compra-list"></div>
+      <div class="compra-footer">
+        <span id="compra-stats">—</span>
+        <button class="btn-ghost-danger" onclick="clearChecked()">Limpiar marcados</button>
+      </div>
+      <div class="sync-status">
+        <span class="sync-dot" id="sync-dot2"></span>
+        <span id="sync-text">Conectando…</span>
+      </div>
+    </div>
+
+    <!-- COMIDAS -->
+    <div id="view-comidas" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Menú semanal</div>
+          <div class="section-sub">Planifica comida y cena</div>
+        </div>
+      </div>
+      <div class="week-nav">
+        <button class="week-arrow" onclick="changeWeek(-1)">‹</button>
+        <span class="week-label" id="week-label">Esta semana</span>
+        <button class="week-arrow" onclick="changeWeek(1)">›</button>
+      </div>
+      <div id="comidas-grid"></div>
+    </div>
+
+    <!-- TAREAS -->
+    <div id="view-tareas" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Tareas del hogar</div>
+          <div class="section-sub" id="tareas-sub">—</div>
+        </div>
+        <button class="btn-primary" style="padding:0.5rem 0.85rem;font-size:0.85rem" onclick="openAddTarea()">+ Añadir</button>
+      </div>
+      <div class="tareas-filters">
+        <button class="filter-chip active" onclick="filterTareas('todas', this)">Todas</button>
+        <button class="filter-chip" onclick="filterTareas('pendientes', this)">Pendientes</button>
+        <button class="filter-chip" onclick="filterTareas('mias', this)">Mis tareas</button>
+        <button class="filter-chip" onclick="filterTareas('limpiar', this)">Limpiar</button>
+        <button class="filter-chip" onclick="filterTareas('cocina', this)">Cocina</button>
+        <button class="filter-chip" onclick="filterTareas('compras', this)">Compras</button>
+      </div>
+      <div class="card" id="tareas-list"></div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div id="view-calendario" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Calendario</div>
+          <div class="section-sub">Google Calendar familiar</div>
+        </div>
+      </div>
+      <div id="cal-login-state">
+        <div class="card" style="padding:1.5rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:0.75rem">&#128197;</div>
+          <div style="font-weight:600;margin-bottom:0.4rem">Conecta Google Calendar</div>
+          <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+            Accede a tus eventos familiares y crea nuevos directamente desde la app.
+          </div>
+
+          <button class="btn-primary" style="width:100%;padding:0.85rem;font-size:0.95rem" onclick="calLogin()">
+            Conectar con Google
+          </button>
+        </div>
+        <div style="margin-top:1rem;font-size:0.78rem;color:var(--text-muted);line-height:1.6;padding:0 0.25rem">
+          Solo se accede al calendario que configures. El token se guarda solo en este dispositivo.
+        </div>
+      </div>
+      <div id="cal-main-state" style="display:none">
+        <div class="section-header" style="margin-bottom:0.75rem">
+          <div style="font-size:0.9rem;font-weight:600">Próximos 15 días</div>
+          <button class="btn-primary" style="padding:0.4rem 0.75rem;font-size:0.8rem" onclick="openAddCalEvent()">+ Evento</button>
+        </div>
+        <div class="card" id="cal-upcoming-list"></div>
+        <div style="margin-top:0.75rem;display:flex;align-items:center;justify-content:space-between">
+          <div class="sync-status" style="margin:0">
+            <span class="sync-dot" id="cal-sync-dot"></span>
+            <span id="cal-sync-text">Sincronizado</span>
+          </div>
+          <button style="font-size:0.78rem;color:var(--text-muted)" onclick="calLogout()">Desconectar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECETAS -->
+    <div id="view-recetas" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Recetas</div>
+          <div class="section-sub" id="recetas-sub">0 recetas guardadas</div>
+        </div>
+        <button class="btn-primary" style="padding:0.5rem 0.85rem;font-size:0.85rem" onclick="openAddReceta()">+ Añadir</button>
+      </div>
+      <div id="recetas-grid"></div>
+    </div>
+
+  </main>
+
+  <!-- ─── BOTTOM NAV ──────────────────────────────────── -->
+  <nav id="bottom-nav">
+    <div class="nav-brand">
+      <div class="nav-brand-icon">🏡</div>
+      <div>
+        <div class="nav-brand-text">El Palomar</div>
+        <div class="nav-brand-sub">Gestión del hogar</div>
+      </div>
+    </div>
+    <button class="nav-btn active" id="nav-dashboard" onclick="switchView('dashboard')">
+      <span class="nav-icon">🏠</span>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-btn" id="nav-compra" onclick="switchView('compra')">
+      <span class="nav-icon">🛒</span>
+      <span>Compra</span>
+      <span class="nav-badge" id="badge-compra" style="display:none">0</span>
+    </button>
+    <button class="nav-btn" id="nav-comidas" onclick="switchView('comidas')">
+      <span class="nav-icon">🍽️</span>
+      <span>Menú</span>
+    </button>
+    <button class="nav-btn" id="nav-tareas" onclick="switchView('tareas')">
+      <span class="nav-icon">✅</span>
+      <span>Tareas</span>
+      <span class="nav-badge" id="badge-tareas" style="display:none">0</span>
+    </button>
+    <button class="nav-btn" id="nav-calendario" onclick="switchView('calendario')">
+      <span class="nav-icon">📅</span>
+      <span>Calendario</span>
+    </button>
+    <button class="nav-btn" id="nav-recetas" onclick="switchView('recetas')">
+      <span class="nav-icon">👨‍🍳</span>
+      <span>Recetas</span>
+    </button>
+    <div class="nav-spacer"></div>
+    <div class="nav-user">
+      <button class="nav-user-avatar" id="nav-user-avatar" onclick="openColorPicker()" title="Cambiar color de acento">?</button>
+      <span class="nav-user-name" id="nav-user-name">—</span>
+      <button class="nav-user-exit" onclick="logout()" title="Salir">✕</button>
+    </div>
+  </nav>
+
+  <!-- ─── MODALS ──────────────────────────────────────── -->
+
+  <!-- Modal: Añadir item compra -->
+  <div class="modal-overlay" id="modal-item" onclick="closeModal('modal-item', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Añadir a la lista</div>
+      <div class="form-field">
+        <label class="form-label">Producto</label>
+        <input class="form-input" id="item-name-input" placeholder="ej. Leche, Pan, Tomates…" onkeydown="if(event.key==='Enter') saveItem()">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+        <div class="form-field">
+          <label class="form-label">Cantidad</label>
+          <input class="form-input" id="item-qty-input" placeholder="ej. 2, 1kg…">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Categoría</label>
+          <select class="form-input" id="item-cat-input">
+            <option value="🥦 Frescos">🥦 Frescos</option>
+            <option value="🥩 Carnicería">🥩 Carnicería</option>
+            <option value="🐟 Pescadería">🐟 Pescadería</option>
+            <option value="🥛 Lácteos">🥛 Lácteos</option>
+            <option value="🍞 Panadería">🍞 Panadería</option>
+            <option value="🥫 Conservas">🥫 Conservas</option>
+            <option value="🧴 Limpieza">🧴 Limpieza</option>
+            <option value="🧾 Varios">🧾 Varios</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-item')">Cancelar</button>
+        <button class="btn-primary" onclick="saveItem()">Añadir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Editar comida -->
+  <div class="modal-overlay" id="modal-comida" onclick="closeModal('modal-comida', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="modal-comida-title">Editar comida</div>
+      <div class="form-field">
+        <label class="form-label">¿Qué vais a comer?</label>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <input class="form-input" id="comida-input" placeholder="ej. Paella, Salmorejo, Filetes…" onkeydown="if(event.key==='Enter') saveMeal()" style="flex:1">
+          <button class="btn-secondary" style="white-space:nowrap;padding:0.5rem 0.7rem;font-size:0.8rem" onclick="openRecetaPicker()">📖 Receta</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Notas (opcional)</label>
+        <input class="form-input" id="comida-notes" placeholder="ej. sin gluten, con ensalada…">
+      </div>
+      <div id="comida-receta-ings" style="display:none">
+        <div class="comida-ings-header">
+          <span>🛒 Ingredientes</span>
+          <button class="btn-secondary" style="font-size:0.75rem;padding:0.3rem 0.6rem" onclick="addAllIngredientsToCompra()">Añadir todos</button>
+        </div>
+        <div id="comida-ings-list"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-comida')">Cancelar</button>
+        <button class="btn-primary" onclick="saveMeal()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Elegir receta para menú -->
+  <div class="modal-overlay" id="modal-receta-picker" onclick="closeModal('modal-receta-picker', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">📖 Elegir receta</div>
+      <input class="form-input" id="receta-picker-search" placeholder="Buscar receta…"
+        oninput="filterRecetaPicker(this.value)" style="margin-bottom:0.75rem">
+      <div id="receta-picker-list"></div>
+      <div class="modal-actions" style="margin-top:0.75rem">
+        <button class="btn-secondary" style="flex:1" onclick="closeModal('modal-receta-picker')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Añadir tarea -->
+  <div class="modal-overlay" id="modal-tarea" onclick="closeModal('modal-tarea', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nueva tarea</div>
+      <div class="form-field">
+        <label class="form-label">Tarea</label>
+        <input class="form-input" id="tarea-name-input" placeholder="ej. Pasar la aspiradora…">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+        <div class="form-field">
+          <label class="form-label">Categoría</label>
+          <select class="form-input" id="tarea-cat-input">
+            <option value="limpiar">🧹 Limpiar</option>
+            <option value="cocina">🍳 Cocina</option>
+            <option value="compras">🛒 Compras</option>
+            <option value="jardín">🌿 Jardín</option>
+            <option value="admin">📋 Admin</option>
+            <option value="bebé">👶 Bebé</option>
+            <option value="otros">📦 Otros</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Prioridad</label>
+          <select class="form-input" id="tarea-prio-input">
+            <option value="baja">🟢 Baja</option>
+            <option value="media">🟡 Media</option>
+            <option value="alta">🔴 Alta</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Asignar a</label>
+        <select class="form-input" id="tarea-assign-input">
+          <option value="">Sin asignar</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>
+        <button class="btn-primary" onclick="saveTarea()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Nuevo evento calendario -->
+  <div class="modal-overlay" id="modal-cal-event" onclick="closeModal('modal-cal-event', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nuevo evento</div>
+      <div class="form-field">
+        <label class="form-label">Titulo</label>
+        <input class="form-input" id="cal-ev-title" placeholder="ej. Cena familiar, Medico...">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+        <div class="form-field">
+          <label class="form-label">Fecha</label>
+          <input type="date" class="form-input" id="cal-ev-date">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Hora inicio</label>
+          <input type="time" class="form-input" id="cal-ev-time" value="10:00">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Duracion</label>
+        <select class="form-input" id="cal-ev-duration">
+          <option value="30">30 minutos</option>
+          <option value="60" selected>1 hora</option>
+          <option value="90">1h 30min</option>
+          <option value="120">2 horas</option>
+          <option value="0">Todo el dia</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Lugar (opcional)</label>
+        <input class="form-input" id="cal-ev-location" placeholder="ej. Casa, Colegio...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-cal-event')">Cancelar</button>
+        <button class="btn-primary" onclick="saveCalEvent()">Crear en Google</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Añadir receta -->
+  <div class="modal-overlay" id="modal-receta" onclick="closeModal('modal-receta', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="receta-modal-title">Nueva receta</div>
+      <div class="form-field">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" id="receta-name-input" placeholder="ej. Paella valenciana, Gazpacho…"
+          onkeydown="if(event.key==='Enter') document.getElementById('receta-ing-input').focus()">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Foto</label>
+        <div class="photo-upload-area">
+          <img id="receta-photo-preview" alt="Vista previa" style="display:none">
+          <div class="photo-upload-btns">
+            <button onclick="triggerPhotoInput()">🖼️ Galería</button>
+            <button onclick="triggerCameraInput()">📷 Cámara</button>
+          </div>
+        </div>
+        <input type="file" accept="image/*" id="receta-photo-input" style="display:none" onchange="onRecetaPhotoChange(this)">
+        <input type="file" accept="image/*" capture="environment" id="receta-camera-input" style="display:none" onchange="onRecetaPhotoChange(this)">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Ingredientes</label>
+        <div class="receta-ing-add">
+          <input class="form-input" id="receta-ing-input" placeholder="Producto…"
+            onkeydown="if(event.key==='Enter') addIngredient()" style="flex:2">
+          <select class="form-input" id="receta-ing-cat" style="flex:1.2;min-width:0">
+            <option value="🥦 Frescos">🥦 Frescos</option>
+            <option value="🥩 Carnicería">🥩 Carnicería</option>
+            <option value="🐟 Pescadería">🐟 Pescadería</option>
+            <option value="🥛 Lácteos">🥛 Lácteos</option>
+            <option value="🍞 Panadería">🍞 Panadería</option>
+            <option value="🥫 Conservas">🥫 Conservas</option>
+            <option value="🧴 Limpieza">🧴 Limpieza</option>
+            <option value="🧾 Varios">🧾 Varios</option>
+          </select>
+          <button class="btn-primary" style="padding:0.5rem 0.85rem;white-space:nowrap" onclick="addIngredient()">+ Añadir</button>
+        </div>
+        <div class="receta-ing-list" id="receta-ing-list"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-receta')">Cancelar</button>
+        <button class="btn-primary" id="save-receta-btn" onclick="saveReceta()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Detalle receta -->
+  <div class="modal-overlay" id="modal-receta-detail" onclick="closeModal('modal-receta-detail', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <img id="detail-receta-photo" alt="" style="display:none">
+      <input type="hidden" id="detail-receta-id">
+      <div class="modal-title" id="detail-receta-name"></div>
+      <div class="form-label" style="margin-bottom:0.5rem">Ingredientes</div>
+      <div id="detail-receta-ingredients"></div>
+      <div class="modal-actions" style="margin-top:1.25rem">
+        <button class="btn-secondary" style="flex:1" onclick="closeModal('modal-receta-detail')">Cerrar</button>
+        <button class="btn-primary" style="flex:1" onclick="openEditReceta(document.getElementById('detail-receta-id').value)">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Onboarding (primer login) -->
+  <div class="modal-overlay" id="modal-onboarding">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">👋 Bienvenido/a a El Palomar</div>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+        Configura tu perfil antes de empezar.
+      </p>
+      <div style="text-align:center;margin-bottom:1rem">
+        <img id="onboard-avatar" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 0.75rem;display:block" alt="">
+      </div>
+      <div class="form-field">
+        <label class="form-label">¿Cómo quieres que te llamemos?</label>
+        <input class="form-input" id="onboard-name" placeholder="Tu nombre…" maxlength="20"
+          onkeydown="if(event.key==='Enter') saveOnboarding()">
+      </div>
+      <div style="margin-top:1.25rem">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text-muted);margin-bottom:0.75rem">Elige tu color de acento</div>
+        <div class="color-swatch-grid" id="onboard-swatches"></div>
+      </div>
+      <div class="modal-actions" style="margin-top:1.5rem">
+        <button class="btn-primary" style="flex:1;padding:0.85rem" onclick="saveOnboarding()">Empezar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Color picker -->
+  <div class="modal-overlay" id="modal-color-picker" onclick="closeModal('modal-color-picker', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🎨 Tu color de acento</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+        Personaliza el color de toda la interfaz. Cada miembro puede tener el suyo propio.
+      </p>
+      <div class="color-swatch-grid" id="color-swatches-grid"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" style="flex:1" onclick="closeModal('modal-color-picker')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<!-- ─── FIREBASE ──────────────────────────────────────── -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<!-- ─── APP SCRIPTS (order matters) ──────────────────── -->
+<script src="js/config.js"></script>
+<script src="js/colors.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/views/compra.js"></script>
+<script src="js/views/comidas.js"></script>
+<script src="js/views/tareas.js"></script>
+<script src="js/views/recetas.js"></script>
+<script src="js/views/dashboard.js"></script>
+<script src="js/data.js"></script>
+<script src="js/views/calendario.js"></script>
+<script src="js/auth.js"></script>
+
+</body>
+</html>
