@@ -331,6 +331,65 @@ ul { list-style: none; }
 .shop-item.checked { opacity: 0.45; }
 .shop-item.checked .item-name { text-decoration: line-through; }
 
+.item-units-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.item-units-stepper button {
+  width: 22px; height: 22px;
+  border: 1.5px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.item-units-stepper button:hover { border-color: var(--accent); color: var(--accent); }
+.item-units-stepper span {
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.modal-units-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  height: 42px;
+}
+.modal-units-stepper button {
+  width: 38px; height: 100%;
+  background: var(--surface);
+  border: none;
+  border-right: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.modal-units-stepper button:last-child {
+  border-right: none;
+  border-left: 1.5px solid var(--border);
+}
+.modal-units-stepper button:hover { background: var(--accent-pale); color: var(--accent); }
+.modal-units-stepper span {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  min-width: 32px;
+}
+
 .check-box {
   width: 22px; height: 22px; flex-shrink: 0;
   border: 2px solid var(--border);
@@ -376,6 +435,18 @@ ul { list-style: none; }
   transition: var(--transition);
 }
 .btn-ghost-danger:hover { background: #fdecea; }
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-danger:hover { filter: brightness(1.1); }
 
 /* ─── COMIDAS ─────────────────────────────────────────── */
 .week-nav {
@@ -1291,4 +1362,31 @@ ul { list-style: none; }
   transition: opacity var(--transition);
 }
 .comida-ing-add-btn:disabled { cursor: default; }
+
+/* ─── ING AUTOCOMPLETE ───────────────────────────────── */
+.ing-suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 200;
+}
+.ing-sug-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background var(--transition);
+}
+.ing-sug-item:hover,
+.ing-sug-item.active { background: var(--accent-pale); }
+.ing-sug-item-name { flex: 1; font-weight: 500; }
+.ing-sug-item-cat  { font-size: 0.75rem; color: var(--text-muted); }
 

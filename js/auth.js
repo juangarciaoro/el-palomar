@@ -168,6 +168,7 @@ function showApp() {
   if (nbDash) nbDash.classList.add('active');
   currentView = 'dashboard';
   initData();
+  if (window.initProductos) initProductos();
   if (window.initRecetas) initRecetas();
   renderDashboard();
   if (window.calInit) window.calInit();

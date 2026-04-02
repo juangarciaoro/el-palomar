@@ -226,6 +226,21 @@
       <div id="recetas-grid"></div>
     </div>
 
+    <!-- PRODUCTOS -->
+    <div id="view-productos" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Catálogo de productos</div>
+          <div class="section-sub" id="productos-sub">0 productos en el catálogo</div>
+        </div>
+      </div>
+      <div class="form-field" style="margin-bottom:1rem">
+        <input class="form-input" id="productos-search" placeholder="🔍 Buscar producto o categoría…"
+          oninput="filterProductos(this.value)">
+      </div>
+      <div id="productos-list"></div>
+    </div>
+
   </main>
 
   <!-- ─── BOTTOM NAV ──────────────────────────────────── -->
@@ -263,6 +278,10 @@
       <span class="nav-icon">👨‍🍳</span>
       <span>Recetas</span>
     </button>
+    <button class="nav-btn" id="nav-productos" onclick="switchView('productos')">
+      <span class="nav-icon">📦</span>
+      <span>Productos</span>
+    </button>
     <div class="nav-spacer"></div>
     <div class="nav-user">
       <button class="nav-user-avatar" id="nav-user-avatar" onclick="openColorPicker()" title="Cambiar color de acento">?</button>
@@ -280,14 +299,27 @@
       <div class="modal-title">Añadir a la lista</div>
       <div class="form-field">
         <label class="form-label">Producto</label>
-        <input class="form-input" id="item-name-input" placeholder="ej. Leche, Pan, Tomates…" onkeydown="if(event.key==='Enter') saveItem()">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
-        <div class="form-field">
-          <label class="form-label">Cantidad</label>
-          <input class="form-input" id="item-qty-input" placeholder="ej. 2, 1kg…">
+        <div style="position:relative">
+          <input class="form-input" id="item-name-input" placeholder="ej. Leche, Pan, Tomates…"
+            oninput="filterCompraSuggestions(this.value)"
+            onfocus="filterCompraSuggestions(this.value)"
+            onblur="hideCompraSuggestions()"
+            onkeydown="onCompraKeydown(event)"
+            style="width:100%;box-sizing:border-box">
+          <div id="compra-suggestions" class="ing-suggestions" style="display:none"></div>
         </div>
-        <div class="form-field">
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:0.5rem;align-items:end">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Unidades</label>
+          <div class="modal-units-stepper">
+            <button type="button" onclick="modalChangeUnits(-1)">−</button>
+            <span id="item-units-display">1</span>
+            <button type="button" onclick="modalChangeUnits(1)">+</button>
+          </div>
+          <input type="hidden" id="item-units-input" value="1">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
           <label class="form-label">Categoría</label>
           <select class="form-input" id="item-cat-input">
             <option value="🥦 Frescos">🥦 Frescos</option>
@@ -461,8 +493,15 @@
       <div class="form-field">
         <label class="form-label">Ingredientes</label>
         <div class="receta-ing-add">
-          <input class="form-input" id="receta-ing-input" placeholder="Producto…"
-            onkeydown="if(event.key==='Enter') addIngredient()" style="flex:2">
+          <div style="flex:2;position:relative">
+            <input class="form-input" id="receta-ing-input" placeholder="Producto…"
+              oninput="filterIngSuggestions(this.value)"
+              onfocus="filterIngSuggestions(this.value)"
+              onblur="hideIngSuggestions()"
+              onkeydown="onIngKeydown(event)"
+              style="width:100%;box-sizing:border-box">
+            <div id="ing-suggestions" class="ing-suggestions" style="display:none"></div>
+          </div>
           <select class="form-input" id="receta-ing-cat" style="flex:1.2;min-width:0">
             <option value="🥦 Frescos">🥦 Frescos</option>
             <option value="🥩 Carnicería">🥩 Carnicería</option>
@@ -541,6 +580,19 @@
     </div>
   </div>
 
+  <!-- Modal: Confirmación genérica -->
+  <div class="modal-overlay" id="modal-confirm" onclick="closeModal('modal-confirm', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="confirm-title">¿Estás seguro?</div>
+      <p id="confirm-message" style="font-size:0.88rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5"></p>
+      <div class="modal-actions">
+        <button class="btn-secondary" style="flex:1" onclick="closeModal('modal-confirm')">Cancelar</button>
+        <button class="btn-danger" style="flex:1" id="confirm-ok-btn">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
@@ -558,6 +610,7 @@
 <script src="js/views/compra.js"></script>
 <script src="js/views/comidas.js"></script>
 <script src="js/views/tareas.js"></script>
+<script src="js/views/productos.js"></script>
 <script src="js/views/recetas.js"></script>
 <script src="js/views/dashboard.js"></script>
 <script src="js/data.js"></script>

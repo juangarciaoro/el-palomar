@@ -27,6 +27,19 @@ window.showToast = function(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 };
 
+// Muestra un modal de confirmación genérico.
+// showConfirm({ title, message, confirmText, onConfirm })
+window.showConfirm = function({ title = '¿Estás seguro?', message = '', confirmText = 'Eliminar', onConfirm }) {
+  document.getElementById('confirm-title').textContent   = title;
+  document.getElementById('confirm-message').textContent = message;
+  document.getElementById('confirm-ok-btn').textContent  = confirmText;
+  document.getElementById('confirm-ok-btn').onclick = function() {
+    closeModal('modal-confirm');
+    onConfirm();
+  };
+  openModal('modal-confirm');
+};
+
 // ─── NOTIFICACIONES WEB PUSH ──────────────────────────────
 async function scheduleNotification(title, time) {
   if (!('Notification' in window)) return;

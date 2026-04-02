@@ -193,9 +193,27 @@ function buildIngRows(ings) {
 }
 
 window.addIngredientToCompra = async function (name, cat, idx) {
+  // Si el producto ya está en la lista (sin marcar), incrementar unidades
+  const existing = compraItems.find(
+    i => !i.checked && i.name.trim().toLowerCase() === name.trim().toLowerCase()
+  );
+  if (existing) {
+    const newUnits = (existing.units || 1) + 1;
+    if (CONFIGURED && db) {
+      await db.collection('compra').doc(existing.id).update({ units: newUnits });
+    } else {
+      existing.units = newUnits;
+      renderCompra && renderCompra();
+    }
+    const btn = document.getElementById('ing-btn-' + idx);
+    if (btn) { btn.textContent = '✓ Añadido'; btn.disabled = true; btn.style.opacity = '0.5'; }
+    showToast('"' + name + '" (+1 unidad)');
+    return;
+  }
   const item = {
     name,
     qty: '',
+    units: 1,
     cat: cat || '🧾 Varios',
     checked: false,
     addedBy: currentUser || '',
@@ -207,8 +225,10 @@ window.addIngredientToCompra = async function (name, cat, idx) {
   } else {
     item.id = 'l' + Date.now();
     compraItems.push(item);
-    renderCompra();
+    renderCompra && renderCompra();
   }
+  // Persistir en catálogo de productos
+  if (window.upsertProducto) window.upsertProducto(name, cat || '🧾 Varios');
   // Mark button as added
   const btn = document.getElementById('ing-btn-' + idx);
   if (btn) { btn.textContent = '✓ Añadido'; btn.disabled = true; btn.style.opacity = '0.5'; }

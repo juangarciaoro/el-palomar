@@ -96,11 +96,18 @@ window.toggleTarea = async function(id) {
   }
 };
 
-window.deleteTarea = async function(id) {
-  if (CONFIGURED && db) {
-    await db.collection('tareas').doc(id).delete();
-  } else {
-    tareasData = tareasData.filter(t => t.id !== id);
-    renderTareas();
-  }
+window.deleteTarea = function(id) {
+  showConfirm({
+    title: 'Eliminar tarea',
+    message: '¿Seguro que quieres eliminar esta tarea?',
+    confirmText: 'Eliminar',
+    onConfirm: async () => {
+      if (CONFIGURED && db) {
+        await db.collection('tareas').doc(id).delete();
+      } else {
+        tareasData = tareasData.filter(t => t.id !== id);
+        renderTareas();
+      }
+    }
+  });
 };

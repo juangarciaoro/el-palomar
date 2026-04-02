@@ -6,6 +6,7 @@ let recetasData        = [];
 let recetaPhotoFile    = null;
 let recetaIngredients  = [];
 let editingRecetaId    = null;  // null = nueva receta, string = edición
+let ingSugIndex        = -1;    // índice de la sugerencia activa (teclado)
 
 // ─── Compress image to base64 via Canvas ────────────────────
 function compressImage(file, maxPx = 800, quality = 0.72) {
@@ -50,6 +51,8 @@ function renderRecetas() {
   const grid = document.getElementById('recetas-grid');
   if (!grid) return;
 
+  buildMasterIngredients();
+
   if (!recetasData.length) {
     grid.innerHTML = `<div class="empty-state">
       <div class="empty-icon">👨‍🍳</div>
@@ -75,6 +78,102 @@ function renderRecetas() {
     </div>`;
   }).join('')}</div>`;
 }
+
+// ─── Master ingredients (derivado de todas las recetas) ──────
+// Mantiene compatibilidad local cuando productos.js no está disponible
+function buildMasterIngredients() {
+  if (window.upsertProducto) {
+    // Con Firestore: persistir ingredientes nuevos en 'productos', masterIngredients
+    // se actualiza via el listener de initProductos()
+    seedProductosFromRecipes();
+  } else {
+    // Fallback local sin Firebase
+    const map = new Map();
+    recetasData.forEach(r => {
+      (r.ingredients || []).forEach(ing => {
+        const name = typeof ing === 'object' ? ing.name : ing;
+        const cat  = typeof ing === 'object' ? ing.cat  : '🧾 Varios';
+        const key  = name.trim().toLowerCase();
+        if (key && !map.has(key)) map.set(key, { name: name.trim(), cat });
+      });
+    });
+    window.masterIngredients = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  }
+}
+
+function seedProductosFromRecipes() {
+  recetasData.forEach(r => {
+    (r.ingredients || []).forEach(ing => {
+      const name = typeof ing === 'object' ? ing.name : ing;
+      const cat  = typeof ing === 'object' ? ing.cat  : '🧾 Varios';
+      if (name && name.trim()) window.upsertProducto(name, cat);
+    });
+  });
+}
+
+// ─── Autocomplete ────────────────────────────────────────
+window.filterIngSuggestions = function(val) {
+  const q = val.trim().toLowerCase();
+  const box = document.getElementById('ing-suggestions');
+  if (!box) return;
+  ingSugIndex = -1;
+  if (!q) { box.style.display = 'none'; return; }
+  const matches = window.masterIngredients.filter(i => i.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) { box.style.display = 'none'; return; }
+  box.innerHTML = matches.map((m, idx) =>
+    `<div class="ing-sug-item" data-idx="${idx}" data-name="${m.name}" data-cat="${m.cat}"
+      onmousedown="pickIngSuggestion('${m.name.replace(/'/g, "\\'")}',' ${m.cat.replace(/'/g, "\\'")}')">
+      <span class="ing-sug-item-name">${m.name}</span>
+      <span class="ing-sug-item-cat">${m.cat}</span>
+    </div>`
+  ).join('');
+  box.style.display = 'block';
+};
+
+window.hideIngSuggestions = function() {
+  setTimeout(() => {
+    const box = document.getElementById('ing-suggestions');
+    if (box) box.style.display = 'none';
+  }, 150);
+};
+
+window.pickIngSuggestion = function(name, cat) {
+  const input = document.getElementById('receta-ing-input');
+  const sel   = document.getElementById('receta-ing-cat');
+  if (input) input.value = name;
+  if (sel) {
+    const opt = [...sel.options].find(o => o.value.trim() === cat.trim());
+    if (opt) sel.value = opt.value;
+  }
+  const box = document.getElementById('ing-suggestions');
+  if (box) box.style.display = 'none';
+  ingSugIndex = -1;
+  input && input.focus();
+};
+
+window.onIngKeydown = function(e) {
+  if (e.key === 'Enter') { addIngredient(); return; }
+  const box = document.getElementById('ing-suggestions');
+  if (!box || box.style.display === 'none') return;
+  const items = box.querySelectorAll('.ing-sug-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    ingSugIndex = Math.min(ingSugIndex + 1, items.length - 1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    ingSugIndex = Math.max(ingSugIndex - 1, 0);
+  } else if (e.key === 'Tab' || e.key === 'Escape') {
+    box.style.display = 'none'; return;
+  } else { return; }
+  items.forEach((el, i) => el.classList.toggle('active', i === ingSugIndex));
+  if (ingSugIndex >= 0) {
+    const el = items[ingSugIndex];
+    pickIngSuggestion(el.dataset.name, el.dataset.cat);
+    // Keep dropdown open so user can keep navigating
+    setTimeout(() => filterIngSuggestions(el.dataset.name), 0);
+  }
+};
 
 // ─── Open add modal ──────────────────────────────────────
 window.openAddReceta = function () {
@@ -236,6 +335,13 @@ window.saveReceta = async function () {
       showToast('Receta guardada ✓');
     }
 
+    // Persistir ingredientes nuevos en el catálogo
+    recetaIngredients.forEach(ing => {
+      const name = typeof ing === 'object' ? ing.name : ing;
+      const cat  = typeof ing === 'object' ? ing.cat  : '🧾 Varios';
+      if (window.upsertProducto) window.upsertProducto(name, cat);
+    });
+
     closeModal('modal-receta');
   } catch (err) {
     console.error('saveReceta:', err);
@@ -247,12 +353,21 @@ window.saveReceta = async function () {
 };
 
 // ─── Delete ──────────────────────────────────────────────
-window.deleteReceta = async function (id) {
-  try {
-    await db.collection('recetas').doc(id).delete();
-    showToast('Receta eliminada');
-  } catch (err) {
-    console.error('deleteReceta:', err);
-    showToast('Error al eliminar');
-  }
+window.deleteReceta = function (id) {
+  const receta = recetasData.find(r => r.id === id);
+  const name = receta ? receta.name : 'esta receta';
+  showConfirm({
+    title: 'Eliminar receta',
+    message: `¿Seguro que quieres eliminar "${name}"? Esta acción no se puede deshacer.`,
+    confirmText: 'Eliminar',
+    onConfirm: async () => {
+      try {
+        await db.collection('recetas').doc(id).delete();
+        showToast('Receta eliminada');
+      } catch (err) {
+        console.error('deleteReceta:', err);
+        showToast('Error al eliminar');
+      }
+    }
+  });
 };
