@@ -1,5 +1,7 @@
 // ─── UI HELPERS ───────────────────────────────────────────
 
+const NAV_VIEWS = ['dashboard','compra','comidas','tareas','calendario','recetas','productos'];
+
 window.switchView = function(view) {
   currentView = view;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -8,6 +10,29 @@ window.switchView = function(view) {
   document.getElementById('nav-' + view).classList.add('active');
   if (view === 'dashboard') renderDashboard();
 };
+
+// ─── SWIPE NAVIGATION ─────────────────────────────────────
+(function() {
+  let startX = 0, startY = 0;
+  const THRESHOLD = 50;   // px mínimos para reconocer swipe
+  const MAX_VERT  = 80;   // px máximos en vertical para no confundir con scroll
+
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    // Ignore if a modal is open
+    if (document.querySelector('.modal-overlay.open')) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < THRESHOLD || Math.abs(dy) > MAX_VERT) return;
+    const idx = NAV_VIEWS.indexOf(currentView);
+    if (dx < 0 && idx < NAV_VIEWS.length - 1) switchView(NAV_VIEWS[idx + 1]); // swipe izquierda → siguiente
+    if (dx > 0 && idx > 0)                    switchView(NAV_VIEWS[idx - 1]); // swipe derecha  → anterior
+  }, { passive: true });
+})();
 
 window.openModal = function(id) {
   document.getElementById(id).classList.add('open');

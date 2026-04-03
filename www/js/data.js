@@ -9,6 +9,7 @@ let unsubscribers = [];
 if (CONFIGURED) {
   firebase.initializeApp(FIREBASE_CONFIG);
   db = firebase.firestore();
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 }
 
 let currentUser = null;

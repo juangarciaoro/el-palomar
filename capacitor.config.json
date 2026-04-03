@@ -1,0 +1,11 @@
+{
+  "appId": "com.juangarciaoro.elpalomar",
+  "appName": "El Palomar",
+  "webDir": "www",
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": ["google.com"]
+    }
+  }
+}
