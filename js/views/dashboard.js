@@ -85,11 +85,4 @@ function renderDashboard() {
     }
   }
 
-  // — Progreso compra —
-  const total   = compraItems.length;
-  const checked = compraItems.filter(i => i.checked).length;
-  const pct     = total > 0 ? Math.round(checked / total * 100) : 0;
-  document.getElementById('dash-compra-label').textContent = `${checked} de ${total} productos`;
-  document.getElementById('dash-compra-pct').textContent   = `${pct}%`;
-  document.getElementById('dash-compra-fill').style.width  = `${pct}%`;
 }
