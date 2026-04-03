@@ -13,21 +13,7 @@ const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && wi
 async function initAuth() {
   if (!CONFIGURED) { showLoginScreen(); return; }
 
-  if (!IS_NATIVE) {
-    // En navegador: procesa el redirect pendiente
-    try {
-      const result = await firebase.auth().getRedirectResult();
-      if (result && result.credential && result.credential.accessToken) {
-        const token = result.credential.accessToken;
-        sessionStorage.setItem('gcal_token',     token);
-        sessionStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
-      }
-    } catch (err) {
-      console.error('getRedirectResult:', err);
-    }
-  }
-
-  // El listener de auth cubre tanto web como nativo (el plugin sincroniza el estado con Firebase Web SDK)
+  // El listener cubre tanto web como nativo
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
       firebaseUser = user;
@@ -79,15 +65,22 @@ window.loginWithGoogle = async function() {
       }
     }
   } else {
-    // En navegador: usa redirect
+    // En navegador: usa popup (funciona en GitHub Pages y localhost)
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/calendar');
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
-      await firebase.auth().signInWithRedirect(provider);
+      const result = await firebase.auth().signInWithPopup(provider);
+      const token = result.credential && result.credential.accessToken;
+      if (token) {
+        sessionStorage.setItem('gcal_token',     token);
+        sessionStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
+      }
     } catch (err) {
-      showToast('Error al iniciar sesión');
-      console.error(err);
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        showToast('Error al iniciar sesión');
+        console.error(err);
+      }
     }
   }
 };
