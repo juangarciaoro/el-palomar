@@ -2,11 +2,40 @@
 
 const NAV_VIEWS = ['dashboard','compra','comidas','tareas','calendario','recetas','productos'];
 
-window.switchView = function(view) {
+window.switchView = function(view, direction) {
+  if (view === currentView) return;
+  const prevView = currentView;
+  const prevIdx  = NAV_VIEWS.indexOf(prevView);
+  const nextIdx  = NAV_VIEWS.indexOf(view);
+
+  // Determinar dirección si no se pasa explícitamente
+  if (direction === undefined) direction = nextIdx > prevIdx ? 'left' : 'right';
+
+  const prevEl = document.getElementById('view-' + prevView);
+  const nextEl = document.getElementById('view-' + view);
+
+  // Preparar la vista entrante fuera de pantalla
+  nextEl.classList.remove('active','slide-enter-left','slide-enter-right','slide-exit-left','slide-exit-right');
+  nextEl.classList.add(direction === 'left' ? 'slide-enter-left' : 'slide-enter-right');
+
+  // Forzar reflow para que la transición arranque
+  nextEl.getBoundingClientRect();
+
+  // Activar transición
+  nextEl.classList.remove('slide-enter-left','slide-enter-right');
+  nextEl.classList.add('active');
+
+  // Salida de la vista anterior
+  if (prevEl) {
+    prevEl.classList.remove('active');
+    prevEl.classList.add(direction === 'left' ? 'slide-exit-left' : 'slide-exit-right');
+    setTimeout(() => {
+      prevEl.classList.remove('slide-exit-left','slide-exit-right');
+    }, 350);
+  }
+
   currentView = view;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('view-' + view).classList.add('active');
   document.getElementById('nav-' + view).classList.add('active');
   if (view === 'dashboard') renderDashboard();
 };
