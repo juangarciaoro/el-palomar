@@ -12,7 +12,10 @@ function renderTareas() {
 
   let filtered = [...tareasData];
   if (currentTareaFilter === 'pendientes') filtered = filtered.filter(t => !t.done);
-  else if (currentTareaFilter === 'mias') filtered = filtered.filter(t => t.assigned === currentUser);
+  else if (currentTareaFilter === 'mias') filtered = filtered.filter(t => {
+    const assignees = Array.isArray(t.assignees) ? t.assignees : (t.assigned ? [t.assigned] : []);
+    return assignees.includes(currentUser);
+  });
   else if (['limpiar','cocina','compras'].includes(currentTareaFilter))
     filtered = filtered.filter(t => t.cat === currentTareaFilter);
 
@@ -29,7 +32,9 @@ function renderTareas() {
   const PRIO_EMOJI = { alta: '🔴', media: '🟡', baja: '🟢' };
   const CAT_EMOJI  = { limpiar:'🧹', cocina:'🍳', compras:'🛒', jardín:'🌿', admin:'📋', bebé:'👶', otros:'📦' };
 
-  list.innerHTML = filtered.map(t => `
+  list.innerHTML = filtered.map(t => {
+    const assignees = Array.isArray(t.assignees) ? t.assignees : (t.assigned ? [t.assigned] : []);
+    return `
     <div class="tarea-item ${t.done ? 'done' : ''}">
       <div class="priority-dot p-${t.prio || 'baja'}"></div>
       <div class="check-box ${t.done ? 'checked' : ''}" onclick="toggleTarea('${t.id}')" style="flex-shrink:0">
@@ -39,13 +44,14 @@ function renderTareas() {
         <div class="tarea-name">${t.name}</div>
         <div class="tarea-meta">
           <span class="tarea-tag">${CAT_EMOJI[t.cat]||'📦'} ${t.cat}</span>
-          ${t.assigned ? `<span class="tarea-assigned">→ ${t.assigned}</span>` : ''}
+          ${assignees.length ? `<span class="tarea-assigned">→ ${assignees.join(', ')}</span>` : ''}
           <span>${PRIO_EMOJI[t.prio]||'🟢'}</span>
         </div>
       </div>
+      <button class="item-edit" onclick="openEditTarea('${t.id}')">✎</button>
       <button class="item-delete" onclick="deleteTarea('${t.id}')">✕</button>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 window.filterTareas = function(f, btn) {
@@ -56,6 +62,28 @@ window.filterTareas = function(f, btn) {
 };
 
 window.openAddTarea = function() {
+  document.getElementById('tarea-edit-id').value = '';
+  document.getElementById('tarea-modal-title').textContent = 'Nueva tarea';
+  document.getElementById('tarea-name-input').value = '';
+  document.getElementById('tarea-cat-input').value = 'limpiar';
+  document.getElementById('tarea-prio-input').value = 'baja';
+  document.querySelectorAll('#tarea-assign-group input[type="checkbox"]').forEach(cb => cb.checked = false);
+  openModal('modal-tarea');
+  setTimeout(() => document.getElementById('tarea-name-input').focus(), 300);
+};
+
+window.openEditTarea = function(id) {
+  const t = tareasData.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('tarea-edit-id').value = id;
+  document.getElementById('tarea-modal-title').textContent = 'Editar tarea';
+  document.getElementById('tarea-name-input').value = t.name;
+  document.getElementById('tarea-cat-input').value = t.cat || 'otros';
+  document.getElementById('tarea-prio-input').value = t.prio || 'baja';
+  const assignees = Array.isArray(t.assignees) ? t.assignees : (t.assigned ? [t.assigned] : []);
+  document.querySelectorAll('#tarea-assign-group input[type="checkbox"]').forEach(cb => {
+    cb.checked = assignees.includes(cb.value);
+  });
   openModal('modal-tarea');
   setTimeout(() => document.getElementById('tarea-name-input').focus(), 300);
 };
@@ -63,26 +91,44 @@ window.openAddTarea = function() {
 window.saveTarea = async function() {
   const name = document.getElementById('tarea-name-input').value.trim();
   if (!name) { showToast('Escribe la tarea'); return; }
-  const tarea = {
+  const assignees = Array.from(
+    document.querySelectorAll('#tarea-assign-group input[type="checkbox"]:checked')
+  ).map(cb => cb.value);
+  const editId = document.getElementById('tarea-edit-id').value;
+  const data = {
     name,
     cat:      document.getElementById('tarea-cat-input').value,
     prio:     document.getElementById('tarea-prio-input').value,
-    assigned: document.getElementById('tarea-assign-input').value,
-    done:     false,
-    addedBy:  currentUser,
-    createdAt: CONFIGURED ? firebase.firestore.FieldValue.serverTimestamp() : Date.now()
+    assignees,
   };
-  if (CONFIGURED && db) {
-    const id = `t_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-    await db.collection('tareas').doc(id).set(tarea);
+  if (editId) {
+    if (CONFIGURED && db) {
+      await db.collection('tareas').doc(editId).update(data);
+    } else {
+      const t = tareasData.find(x => x.id === editId);
+      if (t) Object.assign(t, data);
+      renderTareas();
+    }
+    closeModal('modal-tarea');
+    showToast('Tarea actualizada');
   } else {
-    tarea.id = 'lt' + Date.now();
-    tareasData.push(tarea);
-    renderTareas();
+    const tarea = {
+      ...data,
+      done:     false,
+      addedBy:  currentUser,
+      createdAt: CONFIGURED ? firebase.firestore.FieldValue.serverTimestamp() : Date.now()
+    };
+    if (CONFIGURED && db) {
+      const id = `t_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+      await db.collection('tareas').doc(id).set(tarea);
+    } else {
+      tarea.id = 'lt' + Date.now();
+      tareasData.push(tarea);
+      renderTareas();
+    }
+    closeModal('modal-tarea');
+    showToast('Tarea añadida');
   }
-  document.getElementById('tarea-name-input').value = '';
-  closeModal('modal-tarea');
-  showToast('Tarea añadida');
 };
 
 window.toggleTarea = async function(id) {

@@ -388,7 +388,8 @@
   <div class="modal-overlay" id="modal-tarea" onclick="closeModal('modal-tarea', event)">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
-      <div class="modal-title">Nueva tarea</div>
+      <div class="modal-title" id="tarea-modal-title">Nueva tarea</div>
+      <input type="hidden" id="tarea-edit-id" value="">
       <div class="form-field">
         <label class="form-label">Tarea</label>
         <input class="form-input" id="tarea-name-input" placeholder="ej. Pasar la aspiradora…">
@@ -417,9 +418,7 @@
       </div>
       <div class="form-field">
         <label class="form-label">Asignar a</label>
-        <select class="form-input" id="tarea-assign-input">
-          <option value="">Sin asignar</option>
-        </select>
+        <div class="assign-chips-group" id="tarea-assign-group"></div>
       </div>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeModal('modal-tarea')">Cancelar</button>

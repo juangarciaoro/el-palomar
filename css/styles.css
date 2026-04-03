@@ -418,6 +418,38 @@ ul { list-style: none; }
   transition: var(--transition);
 }
 .item-delete:hover { color: var(--danger); background: #fdecea; }
+.item-edit {
+  color: var(--text-muted);
+  font-size: 1rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+.item-edit:hover { color: var(--accent); background: var(--surface2); }
+
+.assign-chips-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+.assign-chip input[type="checkbox"] { display: none; }
+.assign-chip label {
+  display: block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--surface2);
+  user-select: none;
+}
+.assign-chip input:checked + label {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
 
 .compra-footer {
   display: flex; align-items: center; justify-content: space-between;

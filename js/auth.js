@@ -183,16 +183,20 @@ function showApp() {
 }
 
 async function populateAssignDropdown() {
-  const sel = document.getElementById('tarea-assign-input');
-  sel.innerHTML = '<option value="">Sin asignar</option>';
+  const group = document.getElementById('tarea-assign-group');
+  if (!group) return;
+  group.innerHTML = '';
   if (!db) return;
   try {
     const snap = await db.collection('users').get();
     snap.docs.forEach(d => {
-      const opt = document.createElement('option');
-      opt.value = d.data().displayName;
-      opt.textContent = d.data().displayName;
-      sel.appendChild(opt);
+      const name = d.data().displayName;
+      if (!name) return;
+      const chip = document.createElement('div');
+      chip.className = 'assign-chip';
+      chip.innerHTML = `<input type="checkbox" id="assign-${CSS.escape(name)}" value="${name}">` +
+                       `<label for="assign-${CSS.escape(name)}">${name}</label>`;
+      group.appendChild(chip);
     });
   } catch(e) { /* silent */ }
 }
