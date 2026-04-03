@@ -31,7 +31,7 @@ window.switchView = function(view, direction) {
     prevEl.classList.add(direction === 'left' ? 'slide-exit-left' : 'slide-exit-right');
     setTimeout(() => {
       prevEl.classList.remove('slide-exit-left','slide-exit-right');
-    }, 350);
+    }, 560);
   }
 
   currentView = view;

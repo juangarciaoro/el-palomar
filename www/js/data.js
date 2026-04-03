@@ -3,6 +3,11 @@
 // ═══════════════════════════════════════════════════════
 const CONFIGURED = FIREBASE_CONFIG.apiKey !== "TU_API_KEY";
 
+// Detecta si estamos dentro de Capacitor (Android/iOS nativo)
+function isNative() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
 let db = null;
 let unsubscribers = [];
 

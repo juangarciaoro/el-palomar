@@ -261,7 +261,7 @@ ul { list-style: none; }
   pointer-events: none;
   opacity: 0;
   transform: translateX(0);
-  transition: transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease;
+  transition: transform 0.52s cubic-bezier(0.4,0,0.2,1), opacity 0.52s ease;
   will-change: transform, opacity;
 }
 .view.active {

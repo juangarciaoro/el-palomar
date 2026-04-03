@@ -4,8 +4,8 @@
 
 const GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar';
 
-let gcalToken      = sessionStorage.getItem('gcal_token') || null;
-let gcalTokenExp   = parseInt(sessionStorage.getItem('gcal_token_exp') || '0');
+let gcalToken      = localStorage.getItem('gcal_token') || null;
+let gcalTokenExp   = parseInt(localStorage.getItem('gcal_token_exp') || '0');
 let calCurrentDate = new Date();
 let calSelectedDate = new Date();
 let calEvents      = [];
@@ -22,45 +22,69 @@ window.switchView = function(view) {
 };
 
 // --- REFRESCO DE TOKEN (usa Firebase Auth) ------------------
-window.calLogin = function() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope(GCAL_SCOPES);
-  provider.setCustomParameters({ prompt: 'consent' });
-  firebase.auth().signInWithPopup(provider)
-    .then(result => {
+window.calLogin = async function() {
+  if (isNative()) {
+    try {
+      const { FirebaseAuthentication } = window.Capacitor.Plugins;
+      const result = await FirebaseAuthentication.signInWithGoogle({
+        scopes: [GCAL_SCOPES]
+      });
       const token = result.credential && result.credential.accessToken;
       if (token) {
         gcalToken    = token;
         gcalTokenExp = Date.now() + 3600 * 1000;
-        sessionStorage.setItem('gcal_token',        token);
-        sessionStorage.setItem('gcal_token_exp',    String(gcalTokenExp));
-        sessionStorage.setItem('gcal_scope_granted', '1');
+        localStorage.setItem('gcal_token',     token);
+        localStorage.setItem('gcal_token_exp', String(gcalTokenExp));
         showCalMain();
+      } else {
+        showToast('No se pudo obtener acceso a Google Calendar');
       }
-    })
-    .catch(err => {
-      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+    } catch(err) {
+      if (err.code !== 'SIGN_IN_CANCELLED') {
         showToast('Error al conectar con Google Calendar');
         console.error(err);
       }
-    });
+    }
+  } else {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope(GCAL_SCOPES);
+    provider.setCustomParameters({ prompt: 'consent' });
+    firebase.auth().signInWithPopup(provider)
+      .then(result => {
+        const token = result.credential && result.credential.accessToken;
+        if (token) {
+          gcalToken    = token;
+          gcalTokenExp = Date.now() + 3600 * 1000;
+          localStorage.setItem('gcal_token',        token);
+          localStorage.setItem('gcal_token_exp',    String(gcalTokenExp));
+          localStorage.setItem('gcal_scope_granted', '1');
+          showCalMain();
+        }
+      })
+      .catch(err => {
+        if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+          showToast('Error al conectar con Google Calendar');
+          console.error(err);
+        }
+      });
+  }
 };
 
 window.calLogout = function() {
   gcalToken = null;
   gcalTokenExp = 0;
-  sessionStorage.removeItem('gcal_token');
-  sessionStorage.removeItem('gcal_token_exp');
-  sessionStorage.removeItem('gcal_scope_granted');
+  localStorage.removeItem('gcal_token');
+  localStorage.removeItem('gcal_token_exp');
+  localStorage.removeItem('gcal_scope_granted');
   document.getElementById('cal-login-state').style.display = 'block';
   document.getElementById('cal-main-state').style.display  = 'none';
   showToast('Desconectado de Google Calendar');
 };
 
-// Llamar desde showApp() tras guardar el token
+// Llamar desde showApp() tras el login
 window.calInit = async function() {
-  const t = sessionStorage.getItem('gcal_token');
-  const e = parseInt(sessionStorage.getItem('gcal_token_exp') || '0');
+  const t = localStorage.getItem('gcal_token');
+  const e = parseInt(localStorage.getItem('gcal_token_exp') || '0');
   if (t && Date.now() < e) {
     gcalToken    = t;
     gcalTokenExp = e;

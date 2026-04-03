@@ -6,9 +6,6 @@ let firebaseUser      = null;
 let userProfile       = null; // { displayName, email, photoURL, paletteIndex, createdAt }
 let onboardPaletteIdx = 0;
 
-// Detecta si estamos dentro de Capacitor (app nativa Android/iOS)
-const IS_NATIVE = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-
 // ─── INIT AUTH ────────────────────────────────────────────
 async function initAuth() {
   if (!CONFIGURED) { showLoginScreen(); return; }
@@ -50,14 +47,25 @@ async function loadOrOnboard(user) {
 
 // ─── LOGIN WITH GOOGLE ────────────────────────────────────
 window.loginWithGoogle = async function() {
-  if (IS_NATIVE) {
+  if (isNative()) {
     // En Android: usa el plugin nativo (diálogo de Google nativo)
     try {
       const { FirebaseAuthentication } = window.Capacitor.Plugins;
-      const result = await FirebaseAuthentication.signInWithGoogle();
-      // El plugin sincroniza automáticamente con Firebase Web SDK via idToken
+      const result = await FirebaseAuthentication.signInWithGoogle({
+        scopes: ['https://www.googleapis.com/auth/calendar']
+      });
+      // Guardar accessToken en localStorage ANTES de signInWithCredential
+      const token = result.credential && result.credential.accessToken;
+      if (token) {
+        localStorage.setItem('gcal_token',     token);
+        localStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
+      }
+      // signInWithCredential dispara onAuthStateChanged → showApp() → calInit()
       const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
       await firebase.auth().signInWithCredential(credential);
+      // Si el usuario ya tenía sesión activa, onAuthStateChanged no vuelve a disparar
+      // así que llamamos calInit explícitamente
+      if (window.calInit) await window.calInit();
     } catch (err) {
       if (err.code !== 'SIGN_IN_CANCELLED') {
         showToast('Error al iniciar sesión');
@@ -73,8 +81,8 @@ window.loginWithGoogle = async function() {
       const result = await firebase.auth().signInWithPopup(provider);
       const token = result.credential && result.credential.accessToken;
       if (token) {
-        sessionStorage.setItem('gcal_token',     token);
-        sessionStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
+        localStorage.setItem('gcal_token',     token);
+        localStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
       }
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
@@ -90,6 +98,9 @@ window.logout = async function() {
   unsubscribers.forEach(u => u());
   unsubscribers.length = 0;
   sessionStorage.clear();
+  localStorage.removeItem('gcal_token');
+  localStorage.removeItem('gcal_token_exp');
+  localStorage.removeItem('gcal_scope_granted');
   currentUser  = null;
   firebaseUser = null;
   userProfile  = null;
