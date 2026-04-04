@@ -19,6 +19,18 @@
   --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
+/* ─── DARK MODE ──────────────────────────────────────── */
+.dark {
+  --bg:        #141412;
+  --surface:   #1e1d1a;
+  --surface2:  #252420;
+  --border:    #333128;
+  --text:      #f0ede6;
+  --text-muted:#7a7870;
+  --shadow:    0 2px 12px rgba(0,0,0,0.35);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.55);
+}
+
 /* ─── RESET ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
@@ -196,13 +208,11 @@ ul { list-style: none; }
   border-radius: 99px;
   font-size: 0.82rem;
   font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
 }
-.user-pill button {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  padding: 0;
-  line-height: 1;
-}
+.user-pill:hover { filter: brightness(0.95); }
+.user-pill-chevron { font-size: 1rem; opacity: 0.6; }
 
 /* ─── NAV ─────────────────────────────────────────────── */
 #bottom-nav {
@@ -245,7 +255,7 @@ ul { list-style: none; }
 /* ─── MAIN CONTENT ────────────────────────────────────── */
 #main-content {
   flex: 1;
-  padding: 1.25rem 1rem 5.5rem;
+  padding: 0;
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
@@ -258,6 +268,7 @@ ul { list-style: none; }
   display: block;
   position: absolute;
   top: 0; left: 0; right: 0;
+  padding: 1.25rem 1rem 5.5rem;
   pointer-events: none;
   opacity: 0;
   transform: translateX(0);
@@ -914,7 +925,7 @@ ul { list-style: none; }
 
 /* ─── TINY MOBILE ≤380px ─────────────────────────── */
 @media (max-width: 380px) {
-  #main-content { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .view { padding-left: 0.75rem; padding-right: 0.75rem; }
   .section-title { font-size: 1.2rem; }
   .add-row { flex-wrap: wrap; }
   .add-row select { flex: 0 0 100%; }
@@ -995,7 +1006,10 @@ ul { list-style: none; }
   .nav-user {
     display: flex; align-items: center; gap: 0.5rem;
     padding: 0.75rem 0.85rem; border-top: 1px solid var(--border); flex-shrink: 0;
+    cursor: pointer; transition: var(--transition);
   }
+  .nav-user:hover { background: var(--surface2); }
+  .nav-user-chevron { font-size: 1rem; color: var(--text-muted); margin-left: auto; }
   .nav-user-avatar {
     width: 28px; height: 28px; border-radius: 50%;
     background: var(--accent-pale); color: var(--accent);
@@ -1031,9 +1045,10 @@ ul { list-style: none; }
   #main-content {
     flex: 1; min-width: 0;
     max-height: 100dvh; overflow-y: auto;
-    padding: 2rem 2.5rem 2rem;
+    padding: 0;
     max-width: none; margin: 0;
   }
+  .view { padding: 2rem 2.5rem 2rem; }
   .section-title { font-size: 1.65rem; }
 
   /* Comidas: tabla 8 columnas en desktop */
@@ -1114,7 +1129,8 @@ ul { list-style: none; }
 /* ─── DESKTOP ANCHO ≥1100px ──────────────────────── */
 @media (min-width: 1100px) {
   #bottom-nav { width: 260px; }
-  #main-content { padding: 2.5rem 3rem 2rem; }
+  #main-content { padding: 0; }
+  .view { padding: 2.5rem 3rem 2rem; }
 }
 
 /* ─── DASHBOARD ───────────────────────────────────── */
@@ -1403,6 +1419,154 @@ ul { list-style: none; }
   font-size: 0.9rem;
 }
 .ingredient-row:last-child { border-bottom: none; }
+
+/* ─── USER DRAWER ─────────────────────────────────────── */
+#drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 300;
+  backdrop-filter: blur(2px);
+}
+#drawer-overlay.open { display: block; }
+
+#user-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(340px, 88vw);
+  background: var(--surface);
+  z-index: 301;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+}
+#user-drawer.open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.drawer-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.drawer-user-info { flex: 1; min-width: 0; }
+.drawer-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.drawer-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.drawer-close {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  padding: 0.4rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.drawer-close:hover { background: var(--surface2); }
+
+.drawer-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 1.1rem 1rem 0.5rem;
+}
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: calc(100% - 1rem);
+  margin: 0 0.5rem;
+  text-align: left;
+  padding: 0.8rem 0.75rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+.drawer-item:hover, .drawer-item:active { background: var(--surface2); }
+
+.drawer-footer {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+.drawer-logout {
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--danger);
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.drawer-logout:hover { background: #fff1ee; border-color: var(--danger); }
+.dark .drawer-logout:hover { background: rgba(193,68,14,0.15); border-color: var(--danger); }
+
+/* Dark mode hover overrides — reemplaza fondos claros hardcodeados */
+.dark .meal-slot:hover,
+.dark .cal-day:hover,
+.dark .dash-card-row.clickable:hover,
+.dark .cm-slot:hover { background: var(--surface2); }
+
+.dark .week-arrow:hover { background: var(--surface2); }
+
+.dark .modal-units-stepper button:hover { background: var(--surface2); }
+
+.dark .item-delete:hover  { background: rgba(193,68,14,0.18); }
+.dark .item-edit:hover    { background: var(--surface2); }
+.dark .btn-ghost-danger:hover { background: rgba(193,68,14,0.18); }
+
+.dark .color-swatch:hover   { background: var(--surface2); }
+.dark .ing-sug-item:hover   { background: var(--surface2); }
+.dark .ing-sug-item.active  { background: var(--surface2); }
+
+/* Dark mode toggle */
+.dark-toggle {
+  width: 44px; height: 26px;
+  border-radius: 99px;
+  background: var(--border);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.dark .dark-toggle, .dark-toggle.on { background: var(--accent); }
+.dark-toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.dark-toggle.on .dark-toggle-thumb { transform: translateX(18px); }
 
 /* ─── RECIPE PICKER ────────────────────────────────────── */
 .receta-picker-row {

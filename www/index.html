@@ -49,10 +49,9 @@
       🏡 El Palomar
       <span class="dot" id="sync-dot" title="Sincronizando…"></span>
     </div>
-    <div class="user-pill">
+    <div class="user-pill" onclick="openUserDrawer()" title="Menú de usuario">
       <span id="topbar-user">—</span>
-      <button onclick="openColorPicker()" title="Cambiar color" style="font-size:0.85rem;padding:0;opacity:0.7">🎨</button>
-      <button onclick="logout()" title="Salir">✕</button>
+      <span class="user-pill-chevron">›</span>
     </div>
   </header>
 
@@ -271,15 +270,11 @@
       <span class="nav-icon">👨‍🍳</span>
       <span>Recetas</span>
     </button>
-    <button class="nav-btn" id="nav-productos" onclick="switchView('productos')">
-      <span class="nav-icon">📦</span>
-      <span>Productos</span>
-    </button>
     <div class="nav-spacer"></div>
-    <div class="nav-user">
-      <button class="nav-user-avatar" id="nav-user-avatar" onclick="openColorPicker()" title="Cambiar color de acento">?</button>
+    <div class="nav-user" onclick="openUserDrawer()" title="Menú de usuario">
+      <button class="nav-user-avatar" id="nav-user-avatar">?</button>
       <span class="nav-user-name" id="nav-user-name">—</span>
-      <button class="nav-user-exit" onclick="logout()" title="Salir">✕</button>
+      <span class="nav-user-chevron">›</span>
     </div>
   </nav>
 
@@ -588,6 +583,34 @@
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
+
+  <!-- ─── USER DRAWER ──────────────────────────────────── -->
+  <div id="drawer-overlay" onclick="closeUserDrawer()"></div>
+  <aside id="user-drawer">
+    <div class="drawer-header">
+      <span class="drawer-avatar" id="drawer-avatar">?</span>
+      <div class="drawer-user-info">
+        <div class="drawer-name" id="drawer-name">—</div>
+        <div class="drawer-email" id="drawer-email"></div>
+      </div>
+      <button class="drawer-close" onclick="closeUserDrawer()">✕</button>
+    </div>
+    <div class="drawer-section-title">🎨 Personalización</div>
+    <div class="drawer-item" style="justify-content:space-between;cursor:default">
+      <span>🌙 Modo oscuro</span>
+      <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Alternar modo oscuro">
+        <span class="dark-toggle-thumb"></span>
+      </button>
+    </div>
+    <div class="color-swatch-grid" id="drawer-swatches" style="padding:0 1rem 0.5rem"></div>
+    <div class="drawer-section-title">⚙️ Administración</div>
+    <button class="drawer-item" onclick="closeUserDrawer(); switchView('productos')">
+      <span>📦</span><span>Catálogo de productos</span>
+    </button>
+    <div class="drawer-footer">
+      <button class="drawer-logout" onclick="closeUserDrawer(); logout()">Cerrar sesión</button>
+    </div>
+  </aside>
 
 </div>
 
