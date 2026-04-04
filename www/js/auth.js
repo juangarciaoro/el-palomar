@@ -6,10 +6,21 @@ let firebaseUser      = null;
 let userProfile       = null; // { displayName, email, photoURL, paletteIndex, createdAt }
 let onboardPaletteIdx = 0;
 
+// ─── LOADING SCREEN ─────────────────────────────────────────
+function showLoading() {
+  const el = document.getElementById('loading-screen');
+  if (el) el.style.display = 'flex';
+}
+function hideLoading() {
+  const el = document.getElementById('loading-screen');
+  if (el) el.style.display = 'none';
+}
+
 // ─── INIT AUTH ────────────────────────────────────────────
 async function initAuth() {
   if (!CONFIGURED) { showLoginScreen(); return; }
 
+  showLoading();
   // El listener cubre tanto web como nativo
   firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
@@ -19,6 +30,7 @@ async function initAuth() {
       firebaseUser = null;
       userProfile  = null;
       currentUser  = null;
+      hideLoading();
       showLoginScreen();
     }
   });
@@ -41,6 +53,7 @@ async function loadOrOnboard(user) {
   } catch (err) {
     console.error('Error loading profile:', err);
     showToast('Error al cargar el perfil');
+    hideLoading();
     showLoginScreen();
   }
 }
@@ -50,6 +63,7 @@ window.loginWithGoogle = async function() {
   if (isNative()) {
     // En Android: usa el plugin nativo (diálogo de Google nativo)
     try {
+      showLoading();
       const { FirebaseAuthentication } = window.Capacitor.Plugins;
       const result = await FirebaseAuthentication.signInWithGoogle({
         scopes: ['https://www.googleapis.com/auth/calendar']
@@ -67,6 +81,7 @@ window.loginWithGoogle = async function() {
       // así que llamamos calInit explícitamente
       if (window.calInit) await window.calInit();
     } catch (err) {
+      hideLoading();
       if (err.code !== 'SIGN_IN_CANCELLED') {
         showToast('Error al iniciar sesión');
         console.error(err);
@@ -78,6 +93,7 @@ window.loginWithGoogle = async function() {
     provider.addScope('https://www.googleapis.com/auth/calendar');
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
+      showLoading();
       const result = await firebase.auth().signInWithPopup(provider);
       const token = result.credential && result.credential.accessToken;
       if (token) {
@@ -85,6 +101,7 @@ window.loginWithGoogle = async function() {
         localStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
       }
     } catch (err) {
+      hideLoading();
       if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
         showToast('Error al iniciar sesión');
         console.error(err);
@@ -164,6 +181,7 @@ window.saveOnboarding = async function() {
 
 // ─── SHOW APP ─────────────────────────────────────────────
 function showApp() {
+  hideLoading();
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('topbar').classList.add('visible');
   document.getElementById('bottom-nav').classList.add('visible');

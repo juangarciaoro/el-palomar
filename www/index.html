@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#1a1a2e">
+<meta name="theme-color" content="#C4622D">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>El Palomar</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -16,37 +18,50 @@
 
   <!-- ─── LOGIN ───────────────────────────────────────── -->
   <div id="login-screen">
-    <div class="login-hero">
-      <div class="login-logo">
-        <div class="icon">🏡</div>
-        <h1>El Palomar</h1>
-        <p>Organiza el día a día juntos</p>
-      </div>
-      <div class="login-hero-features">
-        <div class="login-feature">🛒 Lista de la compra compartida</div>
-        <div class="login-feature">🍽️ Planificador de menú semanal</div>
-        <div class="login-feature">✅ Gestión de tareas del hogar</div>
-        <div class="login-feature">📅 Calendario familiar integrado</div>
-      </div>
+    <svg class="login-glyph" viewBox="0 0 64 52" fill="none" aria-hidden="true">
+      <path class="glyph-roof"  d="M2,26 L32,2 L62,26"/>
+      <path class="glyph-walls" d="M10,26 L10,50 L54,50 L54,26"/>
+      <path class="glyph-win"   d="M40,30 L48,30 L48,38 L40,38 Z"/>
+      <path class="glyph-door"  d="M26,50 L26,38 Q32,28 38,38 L38,50"/>
+    </svg>
+    <div class="login-identity">
+      <h1 class="login-title">El Palomar</h1>
+      <div class="login-ornament" aria-hidden="true">◆</div>
+      <p class="login-tagline">Donde empieza el día.</p>
     </div>
-    <div class="login-panel">
-      <div class="login-card">
-        <h2>Accede a tu hogar</h2>
-        <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:0.25rem">
-          Usa tu cuenta de Google para sincronizar con el resto de la familia y conectar el calendario.
-        </p>
-        <button class="btn-google" onclick="loginWithGoogle()">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
-          Continuar con Google
-        </button>
-      </div>
+    <div class="login-cta">
+      <button class="btn-google" onclick="loginWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+        Continuar con Google
+      </button>
+      <p class="login-legal">Al continuar, sincronizas tu cuenta con el hogar compartido.</p>
+    </div>
+  </div>
+
+  <!-- ─── LOADING SCREEN ─────────────────────────────── -->
+  <div id="loading-screen" style="display:none">
+    <svg class="loading-glyph" viewBox="0 0 64 52" fill="none" aria-hidden="true">
+      <path class="glyph-roof"  d="M2,26 L32,2 L62,26"/>
+      <path class="glyph-walls" d="M10,26 L10,50 L54,50 L54,26"/>
+      <path class="glyph-win"   d="M40,30 L48,30 L48,38 L40,38 Z"/>
+      <path class="glyph-door"  d="M26,50 L26,38 Q32,28 38,38 L38,50"/>
+    </svg>
+    <p class="loading-label">El Palomar</p>
+    <div class="loading-dots" aria-label="Cargando">
+      <span></span><span></span><span></span>
     </div>
   </div>
 
   <!-- ─── TOPBAR ──────────────────────────────────────── -->
   <header id="topbar">
     <div class="topbar-title">
-      🏡 El Palomar
+      <svg width="18" height="15" viewBox="0 0 64 52" fill="none" aria-hidden="true" style="flex-shrink:0">
+        <path d="M2,26 L32,2 L62,26" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10,26 L10,50 L54,50 L54,26" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40,30 L48,30 L48,38 L40,38 Z" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M26,50 L26,38 Q32,28 38,38 L38,50" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      El Palomar
       <span class="dot" id="sync-dot" title="Sincronizando…"></span>
     </div>
     <div class="user-pill" onclick="openUserDrawer()" title="Menú de usuario">
@@ -61,51 +76,40 @@
     <!-- DASHBOARD -->
     <div id="view-dashboard" class="view active">
       <div class="dash-greeting">
-        <div class="dash-greeting-name" id="dash-hi">Hola 👋</div>
+        <p class="dash-salute" id="dash-hi">—</p>
+        <h2 class="dash-greeting-name" id="dash-user-name">—</h2>
         <div class="dash-greeting-date" id="dash-date"></div>
       </div>
 
-      <div class="dash-widgets">
-        <div class="dash-widget clickable" onclick="switchView('compra')">
-          <span class="dash-widget-icon">🛒</span>
-          <div class="dash-widget-value" id="dw-compra">0</div>
-          <div class="dash-widget-label">Pendientes</div>
-          <div class="dash-widget-sub">lista de compra</div>
-        </div>
-        <div class="dash-widget clickable" onclick="switchView('tareas')">
-          <span class="dash-widget-icon">✅</span>
-          <div class="dash-widget-value" id="dw-tareas">0</div>
-          <div class="dash-widget-label">Tareas</div>
-          <div class="dash-widget-sub">sin completar</div>
-        </div>
-        <div class="dash-widget clickable" onclick="switchView('calendario')">
-          <span class="dash-widget-icon">📅</span>
-          <div class="dash-widget-value" id="dw-cal3d">0</div>
-          <div class="dash-widget-label">Eventos</div>
-          <div class="dash-widget-sub">próximos 7 días</div>
-        </div>
+      <div class="dash-section-header">
+        <span class="dash-section-title">Menú de hoy</span>
+        <button class="dash-section-link" onclick="switchView('comidas')">Ver semana →</button>
       </div>
-
-      <div class="dash-section-title">🍽️ Menú de hoy</div>
-      <div class="dash-card" id="dash-menu-today">
-        <div class="dash-menu-grid">
+      <div class="dash-card dash-menu-card" id="dash-menu-today">
+        <div id="dash-menu-day" class="dash-menu-day"></div>
+        <div class="dash-menu-meals">
           <div class="dash-menu-slot">
-            <div class="dash-menu-type">🌞 Comida</div>
+            <span class="dash-menu-type">Almuerzo</span>
             <div id="dash-menu-comida" class="dash-menu-empty">Sin planear</div>
           </div>
           <div class="dash-menu-slot">
-            <div class="dash-menu-type">🌙 Cena</div>
+            <span class="dash-menu-type">Cena</span>
             <div id="dash-menu-cena" class="dash-menu-empty">Sin planear</div>
           </div>
         </div>
       </div>
 
-      <div class="dash-section-title">🚨 Tareas prioritarias</div>
+      <div class="dash-section-header">
+        <span class="dash-section-title">Tareas</span>
+        <button class="dash-section-link" onclick="switchView('tareas')">Ver todas →</button>
+      </div>
       <div class="dash-card" id="dash-tareas-list"></div>
 
-      <div class="dash-section-title">📅 Próximos 7 días</div>
+      <div class="dash-section-header">
+        <span class="dash-section-title">Próximos 7 días</span>
+        <button class="dash-section-link" onclick="switchView('calendario')">Ver calendario →</button>
+      </div>
       <div class="dash-card" id="dash-cal3d-list"></div>
-
 
     </div>
 
@@ -116,13 +120,44 @@
           <div class="section-title">Lista de la compra</div>
           <div class="section-sub" id="compra-sub">0 productos pendientes</div>
         </div>
-        <button class="btn-primary" style="padding:0.5rem 0.85rem;font-size:0.85rem" onclick="openAddItem()">+ Añadir</button>
+        <div class="compra-header-actions">
+          <button class="btn-ghost-danger compra-clear-btn" id="compra-clear-btn" onclick="clearChecked()" style="display:none">Limpiar ✓</button>
+        </div>
+      </div>
+      <div class="compra-inline-form">
+        <div class="compra-inline-name-wrap">
+          <input class="compra-inline-input" id="item-name-input" type="text" placeholder="Producto…"
+            autocomplete="off"
+            oninput="filterCompraSuggestions(this.value)"
+            onfocus="filterCompraSuggestions(this.value)"
+            onblur="hideCompraSuggestions()"
+            onkeydown="onCompraKeydown(event)" />
+          <div id="compra-suggestions" class="ing-suggestions" style="display:none"></div>
+        </div>
+        <div class="compra-inline-row2">
+          <div class="compra-inline-units">
+            <button type="button" onclick="inlineChangeUnits(-1)">−</button>
+            <span id="item-units-display">1</span>
+            <button type="button" onclick="inlineChangeUnits(1)">+</button>
+            <input type="hidden" id="item-units-input" value="1">
+          </div>
+          <select class="compra-inline-cat" id="item-cat-input">
+            <option value="🥦 Frescos">🥦 Frescos</option>
+            <option value="🥩 Carnicería">🥩 Carnicería</option>
+            <option value="🐟 Pescadería">🐟 Pescadería</option>
+            <option value="🥛 Lácteos">🥛 Lácteos</option>
+            <option value="🍞 Panadería">🍞 Panadería</option>
+            <option value="🥫 Conservas">🥫 Conservas</option>
+            <option value="🧴 Limpieza">🧴 Limpieza</option>
+            <option value="🧾 Varios">🧾 Varios</option>
+          </select>
+          <button class="compra-inline-add btn-primary" onclick="saveItem()">Añadir</button>
+        </div>
       </div>
       <div id="config-banner-compra"></div>
       <div id="compra-list"></div>
       <div class="compra-footer">
         <span id="compra-stats">—</span>
-        <button class="btn-ghost-danger" onclick="clearChecked()">Limpiar marcados</button>
       </div>
       <div class="sync-status">
         <span class="sync-dot" id="sync-dot2"></span>
@@ -238,7 +273,14 @@
   <!-- ─── BOTTOM NAV ──────────────────────────────────── -->
   <nav id="bottom-nav">
     <div class="nav-brand">
-      <div class="nav-brand-icon">🏡</div>
+      <div class="nav-brand-icon">
+        <svg width="20" height="16" viewBox="0 0 64 52" fill="none" aria-hidden="true">
+          <path d="M2,26 L32,2 L62,26" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10,26 L10,50 L54,50 L54,26" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M40,30 L48,30 L48,38 L40,38 Z" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M26,50 L26,38 Q32,28 38,38 L38,50" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
       <div>
         <div class="nav-brand-text">El Palomar</div>
         <div class="nav-brand-sub">Gestión del hogar</div>
@@ -279,54 +321,6 @@
   </nav>
 
   <!-- ─── MODALS ──────────────────────────────────────── -->
-
-  <!-- Modal: Añadir item compra -->
-  <div class="modal-overlay" id="modal-item" onclick="closeModal('modal-item', event)">
-    <div class="modal-sheet">
-      <div class="modal-handle"></div>
-      <div class="modal-title">Añadir a la lista</div>
-      <div class="form-field">
-        <label class="form-label">Producto</label>
-        <div style="position:relative">
-          <input class="form-input" id="item-name-input" placeholder="ej. Leche, Pan, Tomates…"
-            oninput="filterCompraSuggestions(this.value)"
-            onfocus="filterCompraSuggestions(this.value)"
-            onblur="hideCompraSuggestions()"
-            onkeydown="onCompraKeydown(event)"
-            style="width:100%;box-sizing:border-box">
-          <div id="compra-suggestions" class="ing-suggestions" style="display:none"></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:0.5rem;align-items:end">
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Unidades</label>
-          <div class="modal-units-stepper">
-            <button type="button" onclick="modalChangeUnits(-1)">−</button>
-            <span id="item-units-display">1</span>
-            <button type="button" onclick="modalChangeUnits(1)">+</button>
-          </div>
-          <input type="hidden" id="item-units-input" value="1">
-        </div>
-        <div class="form-field" style="margin-bottom:0">
-          <label class="form-label">Categoría</label>
-          <select class="form-input" id="item-cat-input">
-            <option value="🥦 Frescos">🥦 Frescos</option>
-            <option value="🥩 Carnicería">🥩 Carnicería</option>
-            <option value="🐟 Pescadería">🐟 Pescadería</option>
-            <option value="🥛 Lácteos">🥛 Lácteos</option>
-            <option value="🍞 Panadería">🍞 Panadería</option>
-            <option value="🥫 Conservas">🥫 Conservas</option>
-            <option value="🧴 Limpieza">🧴 Limpieza</option>
-            <option value="🧾 Varios">🧾 Varios</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeModal('modal-item')">Cancelar</button>
-        <button class="btn-primary" onclick="saveItem()">Añadir</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Modal: Editar comida -->
   <div class="modal-overlay" id="modal-comida" onclick="closeModal('modal-comida', event)">
