@@ -33,6 +33,7 @@
   --accent-dark:  #C4622D;
   --shadow:    0 2px 12px rgba(0,0,0,0.45);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.65);
+  color-scheme: dark;
 }
 
 /* ─── RESET ───────────────────────────────────────────── */
@@ -278,7 +279,7 @@ ul { list-style: none; }
   transition: var(--transition);
 }
 .user-pill:hover { filter: brightness(0.95); }
-.user-pill-chevron { font-size: 1rem; opacity: 0.6; }
+.user-pill-chevron { opacity: 0.6; display: inline-flex; align-items: center; }
 
 /* ─── NAV ─────────────────────────────────────────────── */
 #bottom-nav {
@@ -303,7 +304,17 @@ ul { list-style: none; }
   transition: var(--transition);
   position: relative;
 }
-.nav-btn .nav-icon { font-size: 1.35rem; line-height: 1; }
+.nav-btn .nav-icon { display: flex; align-items: center; justify-content: center; line-height: 1; }
+.nav-btn .nav-icon svg { width: 22px; height: 22px; }
+.user-pill-chevron svg, .nav-user-chevron svg { width: 15px; height: 15px; flex-shrink: 0; }
+.meal-add-icon svg { width: 13px; height: 13px; }
+.receta-edit-btn svg { width: 12px; height: 12px; }
+.drawer-section-title svg { width: 13px; height: 13px; flex-shrink: 0; }
+.photo-upload-btns button svg { width: 14px; height: 14px; }
+.comida-ing-add-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.comida-ings-header svg { width: 14px; height: 14px; flex-shrink: 0; }
+.receta-picker-thumb svg { width: 24px; height: 24px; opacity: 0.5; }
+.drawer-item > span:first-child svg { width: 16px; height: 16px; vertical-align: middle; }
 .nav-btn.active { color: var(--accent); }
 .nav-btn.active::before {
   content: '';
@@ -642,6 +653,11 @@ ul { list-style: none; }
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
+#compra-clear-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.65rem;
+}
 .compra-inline-form {
   display: flex;
   flex-direction: column;
@@ -852,7 +868,7 @@ ul { list-style: none; }
 }
 .meal-add-icon {
   position: absolute; bottom: 6px; right: 8px;
-  font-size: 1rem;
+  display: flex; align-items: center;
   color: var(--border);
   transition: var(--transition);
 }
@@ -1031,6 +1047,7 @@ ul { list-style: none; }
   outline: none;
   transition: var(--transition);
   background: var(--surface);
+  color: var(--text);
   width: 100%;
 }
 .form-input:focus { border-color: var(--accent); }
@@ -1050,8 +1067,8 @@ ul { list-style: none; }
 /* ─── TOAST ───────────────────────────────────────────── */
 .toast {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
-  background: var(--text);
-  color: white;
+  background: #1C1714;
+  color: #F5EDE4;
   padding: 0.55rem 1rem 0.55rem 0.85rem;
   border-radius: 10px;
   font-size: 0.85rem;
@@ -1070,6 +1087,7 @@ ul { list-style: none; }
 .toast.toast-error   { background: var(--danger); }
 .toast.toast-info    { background: var(--accent); }
 .toast.toast-warn    { background: #b96a00; }
+.dark .toast         { background: #3a3028; color: #F5EDE4; }
 
 /* ─── SKELETON ───────────────────────────────────────────── */
 @keyframes shimmer {
@@ -1119,7 +1137,8 @@ ul { list-style: none; }
   padding: 2.5rem 1.5rem;
   color: var(--text-muted);
 }
-.empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty-icon { margin-bottom: 0.75rem; }
+.empty-icon svg { width: 40px; height: 40px; opacity: 0.55; }
 .empty-title { font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 0.35rem; }
 .empty-desc { font-size: 0.85rem; }
 
@@ -1332,7 +1351,7 @@ ul { list-style: none; }
     transition: opacity 0.15s ease, max-width 0.22s ease;
   }
   .nav-user-name { flex: 1; font-size: 0.8rem; font-weight: 500; }
-  .nav-user-chevron { font-size: 1rem; color: var(--text-muted); }
+  .nav-user-chevron { display: flex; align-items: center; color: var(--text-muted); }
   .nav-user-exit { font-size: 0.72rem; color: var(--text-muted); padding: 0.25rem 0.4rem; border-radius: 4px; }
   #bottom-nav:hover .nav-user-name,    #bottom-nav.is-expanded .nav-user-name,
   #bottom-nav:hover .nav-user-chevron, #bottom-nav.is-expanded .nav-user-chevron,
@@ -1352,13 +1371,15 @@ ul { list-style: none; }
   }
   #bottom-nav:hover .nav-btn, #bottom-nav.is-expanded .nav-btn {
     gap: 0.7rem;
+    padding-right: 0.75rem;
   }
   .nav-btn .nav-icon {
-    font-size: 1.1rem; flex-shrink: 0;
+    flex-shrink: 0;
     width: 64px; height: 44px;
     display: flex; align-items: center; justify-content: center;
     transition: width 0.22s ease;
   }
+  .nav-btn .nav-icon svg { width: 20px; height: 20px; }
   #bottom-nav:hover .nav-btn .nav-icon, #bottom-nav.is-expanded .nav-btn .nav-icon {
     width: 44px;
   }
@@ -1445,7 +1466,7 @@ ul { list-style: none; }
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 0.15rem; text-align: center;
   }
-  .cm-row-emoji { font-size: 0.95rem; }
+  .cm-row-emoji { display: flex; align-items: center; justify-content: center; }
   .cm-row-text {
     font-size: 0.6rem; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em;
@@ -1464,7 +1485,7 @@ ul { list-style: none; }
   .cm-meal-text { font-family: 'Playfair Display', serif; font-weight: 400; font-size: 0.85rem; line-height: 1.3; }
   .cm-meal-notes { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
   .cm-meal-empty { font-size: 0.75rem; color: var(--border); font-style: italic; }
-  .cm-slot .meal-add-icon { position: absolute; bottom: 4px; right: 6px; font-size: 0.85rem; }
+  .cm-slot .meal-add-icon { position: absolute; bottom: 4px; right: 6px; display: flex; align-items: center; }
 
   /* Filtros de tareas: wrap en desktop */
   .tareas-filters { flex-wrap: wrap; overflow-x: visible; }
@@ -1777,7 +1798,8 @@ ul { list-style: none; }
   align-items: center;
   justify-content: center;
 }
-.receta-photo-empty { font-size: 2rem; opacity: 0.35; }
+.receta-photo-empty { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; opacity: 0.35; }
+.receta-photo-empty svg { width: 32px; height: 32px; }
 .receta-card-body { padding: 0.6rem 0.7rem 0.75rem; }
 .receta-card-name { font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
 .receta-card-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
@@ -1806,7 +1828,6 @@ ul { list-style: none; }
   border-radius: 50%;
   background: rgba(0,0,0,0.45);
   color: #fff;
-  font-size: 0.65rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1829,6 +1850,7 @@ ul { list-style: none; }
 }
 .photo-upload-btns button {
   flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
   padding: 0.5rem;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1901,6 +1923,10 @@ ul { list-style: none; }
   overflow-y: auto;
 }
 #user-drawer.open { transform: translateX(0); }
+@media (min-width: 768px) {
+  #user-drawer { right: auto; left: 0; transform: translateX(-100%); }
+  #user-drawer.open { transform: translateX(0); }
+}
 
 .drawer-header {
   display: flex;
@@ -1943,6 +1969,7 @@ ul { list-style: none; }
 .drawer-close:hover { background: var(--surface2); }
 
 .drawer-section-title {
+  display: flex; align-items: center; gap: 0.4rem;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -2049,7 +2076,6 @@ ul { list-style: none; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
 }
 .receta-picker-name { font-size: 0.9rem; font-weight: 500; }
 .receta-picker-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem; }
@@ -2079,6 +2105,7 @@ ul { list-style: none; }
 .comida-ing-row:last-child { border-bottom: none; }
 .comida-ing-name { flex: 1; }
 .comida-ing-add-btn {
+  display: inline-flex; align-items: center; gap: 0.3rem;
   font-size: 0.75rem;
   padding: 0.25rem 0.55rem;
   border: 1.5px solid var(--accent);

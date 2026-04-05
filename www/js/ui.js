@@ -237,11 +237,50 @@ window.closeModal = function(id, e) {
   document.body.style.overflow = '';
 };
 
-window.showToast = function(msg) {
+// ─── MODAL DRAG-TO-DISMISS (mobile handle) ───────────────────
+(function() {
+  let startY = 0, sheet = null, overlay = null;
+
+  document.addEventListener('touchstart', e => {
+    if (!e.target.closest('.modal-handle')) return;
+    sheet   = e.target.closest('.modal-sheet');
+    overlay = sheet?.closest('.modal-overlay');
+    if (!sheet) return;
+    startY = e.touches[0].clientY;
+    sheet.classList.add('is-dragging');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!sheet) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy < 0) return;
+    sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!sheet) return;
+    const dy = e.changedTouches[0].clientY - startY;
+    sheet.classList.remove('is-dragging');
+    if (dy > 110 && overlay?.id) {
+      sheet.style.transform = '';
+      closeModal(overlay.id);
+    } else {
+      sheet.style.transform = '';
+    }
+    sheet = null; overlay = null;
+  }, { passive: true });
+})();
+
+window.showToast = function(msg, type) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
+  const icons = { success: '✓', error: '✕', info: 'ℹ️', warn: '⚠️' };
+  t.className = 'toast' + (type ? ' toast-' + type : '');
+  t.innerHTML = type && icons[type]
+    ? `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`
+    : msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
 };
 
 // Muestra un modal de confirmación genérico.
@@ -316,9 +355,9 @@ async function scheduleNotification(title, time) {
   const delay = next - now;
 
   setTimeout(() => {
-    new Notification('🏡 El Palomar', {
+    new Notification('El Palomar', {
       body: title,
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏡</text></svg>'
+      icon: 'favicon.svg'
     });
   }, delay);
 }

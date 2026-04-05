@@ -1,0 +1,16 @@
+{
+  "name": "el-palomar-alexa-skill",
+  "version": "1.0.0",
+  "description": "Alexa Skill backend para El Palomar — Node.js Lambda",
+  "main": "index.js",
+  "scripts": {
+    "package": "powershell -Command \"if (Test-Path ../deployment.zip) { Remove-Item ../deployment.zip }; Compress-Archive -Path * -DestinationPath ../deployment.zip\"",
+    "package:unix": "cd .. && zip -r deployment.zip lambda/ --exclude '*.md'"
+  },
+  "dependencies": {
+    "ask-sdk": "^2.14.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

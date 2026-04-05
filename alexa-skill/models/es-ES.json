@@ -1,0 +1,77 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "el palomar",
+      "intents": [
+        {
+          "name": "AddShoppingItemIntent",
+          "slots": [
+            {
+              "name": "producto",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "añade {producto}",
+            "agrega {producto}",
+            "añade {producto}",
+            "pon {producto}",
+            "tenemos que comprar {producto}",
+            "apunta {producto}",
+            "necesitamos comprar {producto}",
+            "falta {producto}"
+          ]
+        },
+        {
+          "name": "RemoveShoppingItemIntent",
+          "slots": [
+            {
+              "name": "producto",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "elimina {producto}",
+            "quita {producto}",
+            "borra {producto}",
+            "elimina {producto}",
+            "quita {producto}",
+            "ya tengo {producto}",
+            "ya hay {producto}",
+            "elimina {producto}",
+            "quita {producto}",
+            "borra {producto}"
+          ]
+        },
+        {
+          "name": "ListShoppingIntent",
+          "slots": [],
+          "samples": [
+            "qué hay en la lista de la compra",
+            "qué tenemos en la lista de la compra",
+            "lee la lista de la compra",
+            "dime la lista de la compra",
+            "qué tengo que comprar",
+            "qué necesitamos comprar",
+            "cuáles son los productos pendientes",
+            "qué falta comprar",
+            "cuántos productos hay en la lista"
+          ]
+        },
+        {
+          "name": "AMAZON.HelpIntent"
+        },
+        {
+          "name": "AMAZON.StopIntent"
+        },
+        {
+          "name": "AMAZON.CancelIntent"
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent"
+        }
+      ],
+      "types": []
+    }
+  }
+}

@@ -54,17 +54,17 @@ function renderComidas() {
       '</div>' +
       '<div class="meals-row">' +
         (showComida ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
-          + '<div class="meal-type">🌞 Comida</div>'
+          + '<div class="meal-type">Almuerzo</div>'
           + (data.comida
             ? '<div class="meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.comidaNotes + '</div>' : '')
             : '<div class="meal-empty">Sin planear</div>')
-          + '<span class="meal-add-icon">✏️</span></div>' : '') +
+          + '<span class="meal-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></div>' : '') +
         (showCena ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
-          + '<div class="meal-type">🌙 Cena</div>'
+          + '<div class="meal-type">Cena</div>'
           + (data.cena
             ? '<div class="meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.cenaNotes + '</div>' : '')
             : '<div class="meal-empty">Sin planear</div>')
-          + '<span class="meal-add-icon">✏️</span></div>' : '') +
+          + '<span class="meal-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></div>' : '') +
       '</div></div>';
   }).join('');
 
@@ -86,7 +86,7 @@ function renderComidas() {
       + (data.comida
           ? '<div class="cm-meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div class="cm-meal-notes">' + data.comidaNotes + '</div>' : '')
           : '<div class="cm-meal-empty">Sin planear</div>')
-      + '<span class="meal-add-icon">✏️</span></div>';
+      + '<span class="meal-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></div>';
   }).join('');
 
   const cenaSlots = dates.map(function(d, idx) {
@@ -97,14 +97,14 @@ function renderComidas() {
       + (data.cena
           ? '<div class="cm-meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div class="cm-meal-notes">' + data.cenaNotes + '</div>' : '')
           : '<div class="cm-meal-empty">Sin planear</div>')
-      + '<span class="meal-add-icon">✏️</span></div>';
+      + '<span class="meal-add-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></span></div>';
   }).join('');
 
   const desktopHtml =
     '<div class="cm-table">' +
       '<div class="cm-label-cell"></div>' + dayHeads +
-      '<div class="cm-row-label"><span class="cm-row-emoji">🌞</span><span class="cm-row-text">Comida</span></div>' + comidaSlots +
-      '<div class="cm-row-label"><span class="cm-row-emoji">🌙</span><span class="cm-row-text">Cena</span></div>' + cenaSlots +
+      '<div class="cm-row-label"><span class="cm-row-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></span><span class="cm-row-text">Comida</span></div>' + comidaSlots +
+      '<div class="cm-row-label"><span class="cm-row-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="cm-row-text">Cena</span></div>' + cenaSlots +
     '</div>';
 
   document.getElementById('comidas-grid').innerHTML =
@@ -116,8 +116,10 @@ window.changeWeek = function(dir) { weekOffset += dir; renderComidas(); };
 window.openMealEdit = function(date, slot) {
   currentMealEdit = { date, slot };
   const data = comidasData[date] || {};
-  document.getElementById('modal-comida-title').textContent =
-    slot === 'comida' ? '🌞 Editar comida' : '🌙 Editar cena';
+  document.getElementById('modal-comida-title').innerHTML =
+    slot === 'comida'
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-right:0.35rem"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Editar comida'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-right:0.35rem"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Editar cena';
   const mealName = data[slot] || '';
   document.getElementById('comida-input').value = mealName;
   document.getElementById('comida-notes').value = data[slot + 'Notes'] || '';
@@ -195,7 +197,7 @@ function renderRecetaPickerList(q) {
     const thumbStyle = photo ? 'background-image:url(\'' + photo + '\')' : '';
     return '<div class="receta-picker-row" onclick="pickReceta(\'' + r.id + '\')">'
       + '<div class="receta-picker-thumb" style="' + thumbStyle + '">'
-      + (photo ? '' : '🍽️')
+      + (photo ? '' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2s2-.9 2-2V2"/><path d="M4 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2z"/><path d="M21 15v7"/></svg>')
       + '</div>'
       + '<div class="receta-picker-info">'
       + '<div class="receta-picker-name">' + r.name + '</div>'
@@ -230,7 +232,7 @@ function buildIngRows(ings) {
       + '<span class="ingredient-dot">•</span>'
       + '<span class="comida-ing-name">' + name + '</span>'
       + '<span style="font-size:0.72rem;color:var(--text-muted);margin-right:0.4rem">' + cat + '</span>'
-      + '<button class="comida-ing-add-btn" id="' + safeId + '" onclick="addIngredientToCompra(\'' + safeName + '\',\'' + cat + '\',' + i + ')">🛒 Añadir</button>'
+      + '<button class="comida-ing-add-btn" id="' + safeId + '" onclick="addIngredientToCompra(\'' + safeName + '\',\'' + cat + '\',' + i + ')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.45L23 6H6"/></svg> Añadir</button>'
       + '</div>';
   }).join('');
 }

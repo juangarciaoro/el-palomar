@@ -22,21 +22,19 @@ function renderTareas() {
   const list = document.getElementById('tareas-list');
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">✅</div>
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
       <div class="empty-title">Sin tareas</div>
       <div class="empty-desc">¡Todo al día!</div>
     </div>`;
     return;
   }
 
-  const PRIO_EMOJI = { alta: '🔴', media: '🟡', baja: '🟢' };
   const CAT_EMOJI  = { limpiar:'🧹', cocina:'🍳', compras:'🛒', jardín:'🌿', admin:'📋', bebé:'👶', otros:'📦' };
 
-  list.innerHTML = filtered.map(t => {
+  const renderItem = t => {
     const assignees = Array.isArray(t.assignees) ? t.assignees : (t.assigned ? [t.assigned] : []);
     return `
     <div class="tarea-item ${t.done ? 'done' : ''}">
-      <div class="priority-dot p-${t.prio || 'baja'}"></div>
       <div class="check-box ${t.done ? 'checked' : ''}" onclick="toggleTarea('${t.id}')" style="flex-shrink:0">
         ${t.done ? '✓' : ''}
       </div>
@@ -45,13 +43,32 @@ function renderTareas() {
         <div class="tarea-meta">
           <span class="tarea-tag">${CAT_EMOJI[t.cat]||'📦'} ${t.cat}</span>
           ${assignees.length ? `<span class="tarea-assigned">→ ${assignees.join(', ')}</span>` : ''}
-          <span>${PRIO_EMOJI[t.prio]||'🟢'}</span>
         </div>
       </div>
       <button class="item-edit" onclick="openEditTarea('${t.id}')">✎</button>
       <button class="item-delete" onclick="deleteTarea('${t.id}')">✕</button>
     </div>`;
-  }).join('');
+  };
+
+  const groupFilters = ['todas', 'pendientes'];
+  if (groupFilters.includes(currentTareaFilter)) {
+    const PRIO_LABEL = { alta: 'Alta prioridad', media: 'Prioridad media', baja: 'Sin urgencia' };
+    const PRIO_COLOR = { alta: 'var(--danger)', media: 'var(--warning)', baja: 'var(--accent-light)' };
+    const groups = { alta: [], media: [], baja: [] };
+    filtered.forEach(t => { (groups[t.prio] || groups.baja).push(t); });
+    list.innerHTML = Object.entries(groups).map(([prio, items]) => {
+      if (!items.length) return '';
+      return `
+        <div class="tarea-group-header">
+          <span class="tarea-group-dot" style="background:${PRIO_COLOR[prio]}"></span>
+          <span>${PRIO_LABEL[prio]}</span>
+          <span class="tarea-group-count">${items.length}</span>
+        </div>
+        ${items.map(renderItem).join('')}`;
+    }).join('');
+  } else {
+    list.innerHTML = filtered.map(renderItem).join('');
+  }
 }
 
 window.filterTareas = function(f, btn) {

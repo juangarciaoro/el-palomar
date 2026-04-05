@@ -55,7 +55,7 @@ function renderRecetas() {
 
   if (!recetasData.length) {
     grid.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">👨‍🍳</div>
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6V13.87z"/><line x1="6" y1="17" x2="18" y2="17"/></svg></div>
       <div class="empty-title">Sin recetas</div>
       <div class="empty-desc">Añade tu primera receta con el botón "+"</div>
     </div>`;
@@ -67,13 +67,13 @@ function renderRecetas() {
     const photo  = r.photoData || r.photoURL || null;
     return `<div class="receta-card" onclick="openRecetaDetail('${r.id}')">
       <div class="receta-photo-thumb" style="${photo ? `background-image:url('${photo}')` : ''}">
-        ${!photo ? '<span class="receta-photo-empty">🍽️</span>' : ''}
+        ${!photo ? '<span class="receta-photo-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2s2-.9 2-2V2"/><path d="M4 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2z"/><path d="M21 15v7"/></svg></span>' : ''}
       </div>
       <div class="receta-card-body">
         <div class="receta-card-name">${r.name}</div>
         <div class="receta-card-meta">${numIng} ingrediente${numIng !== 1 ? 's' : ''}</div>
       </div>
-      <button class="receta-edit-btn" onclick="event.stopPropagation();openEditReceta('${r.id}')" title="Editar">✏️</button>
+      <button class="receta-edit-btn" onclick="event.stopPropagation();openEditReceta('${r.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
       <button class="receta-delete-btn" onclick="event.stopPropagation();deleteReceta('${r.id}')" title="Eliminar">✕</button>
     </div>`;
   }).join('')}</div>`;

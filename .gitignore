@@ -1,3 +1,9 @@
 node_modules/
 android/
 package-lock.json
+
+# Alexa Skill — credenciales sensibles (NUNCA subir a Git)
+*service-account*.json
+*firebase-adminsdk*.json
+alexa-skill/lambda/node_modules/
+alexa-skill/deployment.zip

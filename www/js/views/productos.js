@@ -54,7 +54,7 @@ function renderProductos() {
 
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">📦</div>
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
       <div class="empty-title">${q ? 'Sin resultados' : 'Sin productos'}</div>
       <div class="empty-desc">${q ? 'Prueba con otro término' : 'Los productos se añaden automáticamente al guardar recetas o añadir a la compra'}</div>
     </div>`;
@@ -69,12 +69,17 @@ function renderProductos() {
     cats[cat].push(p);
   });
 
+  const CAT_OPTIONS = ['🥦 Frescos','🥩 Carnicería','🐟 Pescadería','🥛 Lácteos','🍞 Panadería','🥫 Conservas','🧴 Limpieza','🧾 Varios'];
+
   list.innerHTML = Object.entries(cats).map(([cat, items]) => `
     <div class="card category-section" style="margin-bottom:0.75rem">
       <div class="category-label">${cat}</div>
       ${items.map(p => `
         <div class="shop-item" id="prod-${p.id}">
           <span class="item-name">${p.name}</span>
+          <select class="compra-inline-cat prod-cat-select" onchange="updateProductoCat('${p.id}', this.value)">
+            ${CAT_OPTIONS.map(o => `<option value="${o}"${o === (p.cat || '🧾 Varios') ? ' selected' : ''}>${o}</option>`).join('')}
+          </select>
           <button class="item-delete" onclick="deleteProducto('${p.id}', '${p.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">✕</button>
         </div>
       `).join('')}
@@ -87,7 +92,31 @@ window.filterProductos = function(q) {
   renderProductos();
 };
 
-// ─── Delete ───────────────────────────────────────────────
+// ─── Update categoría ─────────────────────────────────────
+window.updateProductoCat = async function(id, newCat) {
+  if (!CONFIGURED || !db) return;
+  const producto = window.masterIngredients.find(p => p.id === id);
+  if (!producto) return;
+  try {
+    // Actualizar en catálogo
+    await db.collection('productos').doc(id).update({ cat: newCat });
+    // Actualizar items de compra que coincidan por nombre
+    const snap = await db.collection('compra')
+      .where('cat', '==', producto.cat || '🧾 Varios')
+      .get();
+    const batch = db.batch();
+    snap.docs.forEach(doc => {
+      if (doc.data().name.toLowerCase() === producto.name.toLowerCase()) {
+        batch.update(doc.ref, { cat: newCat });
+      }
+    });
+    await batch.commit();
+    showToast(`Categoría de "${producto.name}" actualizada`);
+  } catch(e) {
+    console.error('updateProductoCat:', e);
+    showToast('Error al actualizar la categoría');
+  }
+};
 window.deleteProducto = function(id, name) {
   showConfirm({
     title: 'Eliminar producto',

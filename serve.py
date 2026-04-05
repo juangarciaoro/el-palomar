@@ -5,7 +5,7 @@ import os
 
 PORT = 8080
 HOST = "localhost"
-ENTRY = "index.html"
+ENTRY = "www/index.html"
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 

@@ -10,6 +10,27 @@ let calCurrentDate = new Date();
 let calSelectedDate = new Date();
 let calEvents      = [];
 
+// ─── SILENT TOKEN REFRESH ────────────────────────────────
+async function calSilentRefresh() {
+  try {
+    if (isNative()) {
+      const { FirebaseAuthentication } = window.Capacitor.Plugins;
+      const result = await FirebaseAuthentication.signInWithGoogle({ scopes: [GCAL_SCOPES] });
+      const token = result.credential && result.credential.accessToken;
+      if (token) {
+        gcalToken    = token;
+        gcalTokenExp = Date.now() + 3600 * 1000;
+        localStorage.setItem('gcal_token',     token);
+        localStorage.setItem('gcal_token_exp', String(gcalTokenExp));
+        return true;
+      }
+    }
+  } catch(e) {
+    console.warn('Silent calendar refresh failed:', e);
+  }
+  return false;
+}
+
 // Muestra el calendario y auto-conecta si el token es valido
 const _origSwitchView = window.switchView;
 window.switchView = function(view) {
@@ -17,6 +38,18 @@ window.switchView = function(view) {
   if (view === 'calendario') {
     if (gcalToken && Date.now() < gcalTokenExp) {
       showCalMain();
+    } else if (gcalToken) {
+      // Token expirado: intentar refresco silencioso (nativo) o mostrar reconexión
+      calSilentRefresh().then(ok => {
+        if (ok) showCalMain();
+        else {
+          gcalToken = null;
+          gcalTokenExp = 0;
+          localStorage.removeItem('gcal_token');
+          localStorage.removeItem('gcal_token_exp');
+          showToast('Sesión de Google Calendar expirada. Vuelve a conectar.');
+        }
+      });
     }
   }
 };
@@ -129,8 +162,20 @@ async function fetchCalEvents() {
       const errBody = await res.json().catch(() => ({}));
       const reason  = errBody?.error?.errors?.[0]?.reason || errBody?.error?.message || res.status;
       console.error('Google Calendar API error:', JSON.stringify(errBody));
+      // Intentar refresco silencioso antes de desloguear
+      const refreshed = await calSilentRefresh();
+      if (refreshed) {
+        const retryRes = await fetch(url, { headers: { Authorization: 'Bearer ' + gcalToken } });
+        if (retryRes.ok) {
+          const data = await retryRes.json();
+          calEvents = data.items || [];
+          document.getElementById('cal-sync-dot').classList.remove('syncing');
+          document.getElementById('cal-sync-text').textContent = 'Sincronizado';
+          return;
+        }
+      }
       calLogout();
-      showToast(`Error ${res.status}: ${reason}`);
+      showToast(`Sesión de Google Calendar expirada. Vuelve a conectar.`);
       return;
     }
     const data = await res.json();

@@ -2,6 +2,24 @@
 // COMPRA
 // ═══════════════════════════════════════════════════════
 
+const _catCheckedOpen = new Set();
+
+function _renderShopItem(item) {
+  return `
+    <div class="shop-item ${item.checked ? 'checked' : ''}" id="shopitem-${item.id}">
+      <div class="check-box ${item.checked ? 'checked' : ''}" onclick="toggleItem('${item.id}')">
+        ${item.checked ? '✓' : ''}
+      </div>
+      <span class="item-name">${item.name}</span>
+      <div class="item-units-stepper">
+        <button onclick="changeUnits('${item.id}',-1)">−</button>
+        <span>${item.units || 1}</span>
+        <button onclick="changeUnits('${item.id}',1)">+</button>
+      </div>
+      <button class="item-delete" onclick="deleteItem('${item.id}')">✕</button>
+    </div>`;
+}
+
 function renderCompra() {
   const container = document.getElementById('compra-list');
   const pending   = compraItems.filter(i => !i.checked);
@@ -20,13 +38,22 @@ function renderCompra() {
   }
 
   if (!compraItems.length) {
+    const clearBar = document.getElementById('compra-clear-bar');
+    if (clearBar) clearBar.style.display = 'none';
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🛒</div>
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.45L23 6H6"/></svg></div>
       <div class="empty-title">Lista vacía</div>
       <div class="empty-desc">Añade productos con el botón "+"</div>
     </div>`;
     return;
   }
+
+  const clearBar = document.getElementById('compra-clear-bar');
+  if (clearBar) clearBar.style.display = compraItems.filter(i=>i.checked).length > 0 ? '' : 'none';
+
+  const total        = compraItems.length;
+  const checkedCount = compraItems.filter(i => i.checked).length;
+  const pct          = total ? Math.round(checkedCount / total * 100) : 0;
 
   const cats = {};
   compraItems.forEach(item => {
@@ -34,26 +61,45 @@ function renderCompra() {
     cats[item.cat].push(item);
   });
 
-  container.innerHTML = Object.entries(cats).map(([cat, items]) => `
-    <div class="card category-section">
-      <div class="category-label">${cat}</div>
-      ${items.map(item => `
-        <div class="shop-item ${item.checked ? 'checked' : ''}" id="shopitem-${item.id}">
-          <div class="check-box ${item.checked ? 'checked' : ''}" onclick="toggleItem('${item.id}')">
-            ${item.checked ? '✓' : ''}
-          </div>
-          <span class="item-name">${item.name}</span>
-          <div class="item-units-stepper">
-            <button onclick="changeUnits('${item.id}',-1)">−</button>
-            <span>${item.units || 1}</span>
-            <button onclick="changeUnits('${item.id}',1)">+</button>
-          </div>
-          <button class="item-delete" onclick="deleteItem('${item.id}')">✕</button>
+  container.innerHTML =
+    `<div class="compra-progress"><div class="compra-progress-bar" style="width:${pct}%"></div></div>` +
+    Object.entries(cats).map(([cat, items]) => {
+      const catPending = items.filter(i => !i.checked);
+      const catChecked = items.filter(i => i.checked);
+      const isOpen     = _catCheckedOpen.has(cat);
+      const safecat    = cat.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+      const catBadge = catPending.length
+        ? `<span class="cat-pending-badge">${catPending.length}</span>`
+        : `<span class="cat-all-done">✓</span>`;
+
+      const checkedSection = catChecked.length ? `
+        <div class="cat-checked-toggle" onclick="toggleCatChecked('${safecat}')">
+          <span class="cat-checked-label">Ya cogido</span>
+          <span class="cat-checked-count">${catChecked.length}</span>
+          <svg class="cat-checked-chevron${isOpen ? ' open' : ''}" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-      `).join('')}
-    </div>
-  `).join('');
+        <div class="cat-checked-list${isOpen ? ' open' : ''}">
+          ${catChecked.map(item => _renderShopItem(item)).join('')}
+        </div>` : '';
+
+      return `
+      <div class="card category-section">
+        <div class="category-label">${cat}${catBadge}</div>
+        ${catPending.map(item => _renderShopItem(item)).join('')}
+        ${checkedSection}
+      </div>`;
+    }).join('');
 }
+
+window.toggleCatChecked = function(cat) {
+  if (_catCheckedOpen.has(cat)) {
+    _catCheckedOpen.delete(cat);
+  } else {
+    _catCheckedOpen.add(cat);
+  }
+  renderCompra();
+};
 
 let compraSugIndex = -1;
 
@@ -98,6 +144,8 @@ window.hideCompraSuggestions = function() {
   }, 150);
 };
 
+window.filterQuickSuggestions = window.hideQuickSuggestions = window.pickQuickSuggestion = function() {};
+
 window.pickCompraSuggestion = function(name, cat, inList) {
   const input = document.getElementById('item-name-input');
   const sel   = document.getElementById('item-cat-input');
@@ -108,13 +156,12 @@ window.pickCompraSuggestion = function(name, cat, inList) {
   }
   document.getElementById('compra-suggestions').style.display = 'none';
   compraSugIndex = -1;
-  // Si está en lista, mostrar aviso visual en el campo de unidades
-  if (inList) {
-    const unitsInput = document.getElementById('item-units-input');
-    if (unitsInput) unitsInput.focus();
-  } else {
-    input.focus();
-  }
+  // Reset units to 1 when a new product is picked
+  const hidden = document.getElementById('item-units-input');
+  const display = document.getElementById('item-units-display');
+  if (hidden) hidden.value = '1';
+  if (display) display.textContent = '1';
+  input.focus();
 };
 
 window.onCompraKeydown = function(e) {
@@ -140,7 +187,7 @@ window.onCompraKeydown = function(e) {
   }
 };
 
-window.modalChangeUnits = function(delta) {
+window.inlineChangeUnits = function(delta) {
   const hidden = document.getElementById('item-units-input');
   const display = document.getElementById('item-units-display');
   const current = parseInt(hidden.value) || 1;
@@ -150,14 +197,7 @@ window.modalChangeUnits = function(delta) {
 };
 
 window.openAddItem = function() {
-  document.getElementById('item-name-input').value = '';
-  document.getElementById('item-units-input').value = '1';
-  const display = document.getElementById('item-units-display');
-  if (display) display.textContent = '1';
-  const box = document.getElementById('compra-suggestions');
-  if (box) box.style.display = 'none';
-  openModal('modal-item');
-  setTimeout(() => document.getElementById('item-name-input').focus(), 300);
+  document.getElementById('item-name-input').focus();
 };
 
 window.saveItem = async function() {
@@ -181,7 +221,8 @@ window.saveItem = async function() {
     document.getElementById('item-name-input').value = '';
     document.getElementById('item-units-input').value = '1';
     const d1 = document.getElementById('item-units-display'); if (d1) d1.textContent = '1';
-    closeModal('modal-item');
+    const s1 = document.getElementById('compra-suggestions'); if (s1) s1.style.display = 'none';
+    document.getElementById('item-name-input').focus();
     showToast(`"${name}" → ${newUnits} unidades`);
     return;
   }
@@ -207,13 +248,15 @@ window.saveItem = async function() {
   document.getElementById('item-name-input').value = '';
   document.getElementById('item-units-input').value = '1';
   const d2 = document.getElementById('item-units-display'); if (d2) d2.textContent = '1';
-  closeModal('modal-item');
+  const s2 = document.getElementById('compra-suggestions'); if (s2) s2.style.display = 'none';
+  document.getElementById('item-name-input').focus();
   showToast(`"${name}" añadido`);
 };
 
 window.toggleItem = async function(id) {
   const item = compraItems.find(i => i.id === id);
   if (!item) return;
+  if (navigator.vibrate) navigator.vibrate(30);
   const newVal = !item.checked;
   if (CONFIGURED && db) {
     await db.collection('compra').doc(id).update({ checked: newVal });
