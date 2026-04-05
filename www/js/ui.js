@@ -55,7 +55,8 @@ window.switchView = function(view, direction) {
 
   currentView = view;
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('nav-' + view).classList.add('active');
+  const _navBtn = document.getElementById('nav-' + view);
+  if (_navBtn) _navBtn.classList.add('active');
   if (view === 'dashboard') renderDashboard();
 };
 

@@ -212,6 +212,7 @@ function showApp() {
   initData();
   if (window.initProductos) initProductos();
   if (window.initRecetas) initRecetas();
+  if (window.initCategorias) initCategorias();
   renderDashboard();
   if (window.calInit) window.calInit();
 }

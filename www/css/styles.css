@@ -452,6 +452,39 @@ ul { list-style: none; }
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 2;
 }
+
+/* ─── CATEGORÍAS MANAGEMENT ──────────────────────────── */
+.cat-mgmt-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.cat-mgmt-row:last-child { border-bottom: none; }
+.cat-mgmt-emoji {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  width: 2rem; text-align: center;
+}
+.cat-mgmt-name {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.cat-mgmt-actions {
+  display: flex; gap: 0.35rem;
+}
+.cat-mgmt-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.cat-mgmt-btn:hover { background: var(--accent-pale); color: var(--accent); }
+.cat-mgmt-btn--danger:hover { background: #fee2e2; color: var(--danger); }
 .shop-item {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.75rem 1rem;

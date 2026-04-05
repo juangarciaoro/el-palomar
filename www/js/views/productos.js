@@ -69,7 +69,8 @@ function renderProductos() {
     cats[cat].push(p);
   });
 
-  const CAT_OPTIONS = ['🥦 Frescos','🥩 Carnicería','🐟 Pescadería','🥛 Lácteos','🍞 Panadería','🥫 Conservas','🧴 Limpieza','🧾 Varios'];
+  const CAT_OPTIONS = window.getCatOptions ? window.getCatOptions() :
+    ['🥦 Frescos','🥩 Carnicería','🐟 Pescadería','🥛 Lácteos','🍞 Panadería','🥫 Conservas','🧴 Limpieza','🧾 Varios'];
 
   list.innerHTML = Object.entries(cats).map(([cat, items]) => `
     <div class="card category-section" style="margin-bottom:0.75rem">

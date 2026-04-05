@@ -140,7 +140,7 @@
             <button type="button" onclick="inlineChangeUnits(1)">+</button>
             <input type="hidden" id="item-units-input" value="1">
           </div>
-          <select class="compra-inline-cat" id="item-cat-input">
+          <select class="compra-inline-cat cat-select-dynamic" id="item-cat-input">
             <option value="🥦 Frescos">🥦 Frescos</option>
             <option value="🥩 Carnicería">🥩 Carnicería</option>
             <option value="🐟 Pescadería">🐟 Pescadería</option>
@@ -268,6 +268,18 @@
           oninput="filterProductos(this.value)">
       </div>
       <div id="productos-list"></div>
+    </div>
+
+    <!-- CATEGORÍAS -->
+    <div id="view-categorias" class="view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Categorías de productos</div>
+          <div class="section-sub" id="categorias-sub">0 categorías</div>
+        </div>
+        <button class="btn-primary" style="padding:0.5rem 0.85rem;font-size:0.85rem" onclick="openAddCategoria()">+ Añadir</button>
+      </div>
+      <div id="categorias-list"></div>
     </div>
 
   </main>
@@ -485,7 +497,7 @@
               style="width:100%;box-sizing:border-box">
             <div id="ing-suggestions" class="ing-suggestions" style="display:none"></div>
           </div>
-          <select class="form-input" id="receta-ing-cat" style="flex:1.2;min-width:0">
+          <select class="form-input cat-select-dynamic" id="receta-ing-cat" style="flex:1.2;min-width:0">
             <option value="🥦 Frescos">🥦 Frescos</option>
             <option value="🥩 Carnicería">🥩 Carnicería</option>
             <option value="🐟 Pescadería">🐟 Pescadería</option>
@@ -564,6 +576,31 @@
     </div>
   </div>
 
+  <!-- Modal: Categoría -->
+  <div class="modal-overlay" id="modal-categoria" onclick="closeModal('modal-categoria', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="cat-modal-title">Nueva categoría</div>
+      <div style="display:grid;grid-template-columns:5rem 1fr;gap:0.5rem;align-items:end">
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Emoji</label>
+          <input class="form-input" id="cat-emoji-input" placeholder="🥦" maxlength="4"
+            style="text-align:center;font-size:1.4rem;padding:0.5rem"
+            onkeydown="if(event.key==='Enter') document.getElementById('cat-name-input').focus()">
+        </div>
+        <div class="form-field" style="margin-bottom:0">
+          <label class="form-label">Nombre</label>
+          <input class="form-input" id="cat-name-input" placeholder="ej. Frescos, Lácteos…"
+            onkeydown="if(event.key==='Enter') saveCategoria()">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-categoria')">Cancelar</button>
+        <button class="btn-primary" onclick="saveCategoria()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Confirmación genérica -->
   <div class="modal-overlay" id="modal-confirm" onclick="closeModal('modal-confirm', event)">
     <div class="modal-sheet">
@@ -603,6 +640,9 @@
     <button class="drawer-item" onclick="closeUserDrawer(); switchView('productos')">
       <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span><span>Catálogo de productos</span>
     </button>
+    <button class="drawer-item" onclick="closeUserDrawer(); switchView('categorias')">
+      <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span>Categorías de productos</span>
+    </button>
     <div class="drawer-footer">
       <button class="drawer-logout" onclick="closeUserDrawer(); logout()">Cerrar sesión</button>
     </div>
@@ -624,6 +664,7 @@
 <script src="js/views/tareas.js"></script>
 <script src="js/views/productos.js"></script>
 <script src="js/views/recetas.js"></script>
+<script src="js/views/categorias.js"></script>
 <script src="js/views/dashboard.js"></script>
 <script src="js/data.js"></script>
 <script src="js/views/calendario.js"></script>
