@@ -4,6 +4,7 @@
 
 const DAYS_ES   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+let mealRecipeSugIndex = -1;
 
 function getWeekDates(offset) {
   const now = new Date();
@@ -123,22 +124,8 @@ window.openMealEdit = function(date, slot) {
   const mealName = data[slot] || '';
   document.getElementById('comida-input').value = mealName;
   document.getElementById('comida-notes').value = data[slot + 'Notes'] || '';
-
-  // If the saved meal name matches a recipe, show its ingredients
-  const matchedReceta = (typeof recetasData !== 'undefined' && mealName)
-    ? recetasData.find(r => r.name.toLowerCase() === mealName.toLowerCase())
-    : null;
-
-  if (matchedReceta && (matchedReceta.ingredients || []).length) {
-    const ings  = matchedReceta.ingredients;
-    const list  = document.getElementById('comida-ings-list');
-    const block = document.getElementById('comida-receta-ings');
-    list.innerHTML = buildIngRows(ings);
-    block.style.display = 'block';
-  } else {
-    document.getElementById('comida-receta-ings').style.display = 'none';
-    document.getElementById('comida-ings-list').innerHTML = '';
-  }
+  mealRecipeSugIndex = -1;
+  updateMealRecipeIngredients(mealName);
 
   openModal('modal-comida');
   setTimeout(() => document.getElementById('comida-input').focus(), 300);
@@ -164,6 +151,105 @@ window.saveMeal = async function() {
   }
   closeModal('modal-comida');
   showToast('Menú guardado');
+};
+
+function updateMealRecipeIngredients(mealName) {
+  const matchedReceta = (typeof recetasData !== 'undefined' && mealName)
+    ? recetasData.find(r => r.name.toLowerCase() === mealName.trim().toLowerCase())
+    : null;
+  const block = document.getElementById('comida-receta-ings');
+  const list  = document.getElementById('comida-ings-list');
+  if (!block || !list) return;
+
+  if (matchedReceta && (matchedReceta.ingredients || []).length) {
+    list.innerHTML = buildIngRows(matchedReceta.ingredients);
+    block.style.display = 'block';
+  } else {
+    block.style.display = 'none';
+    list.innerHTML = '';
+  }
+}
+
+window.filterMealRecipeSuggestions = function(val) {
+  const box = document.getElementById('comida-recipe-suggestions');
+  if (!box) return;
+
+  const raw = (val || '').trim();
+  const q = raw.toLowerCase();
+  const all = (typeof recetasData !== 'undefined') ? recetasData : [];
+  mealRecipeSugIndex = -1;
+  updateMealRecipeIngredients(raw);
+
+  if (!q) {
+    box.style.display = 'none';
+    return;
+  }
+
+  const matches = all.filter(r => r.name.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) {
+    box.style.display = 'none';
+    return;
+  }
+
+  box.innerHTML = matches.map((r, idx) =>
+    `<div class="ing-sug-item" data-idx="${idx}" data-id="${r.id}" data-name="${r.name.replace(/"/g, '&quot;')}"
+      onmousedown="pickMealRecipeSuggestion('${r.id}')">
+      <span class="ing-sug-item-name">${r.name}</span>
+      <span class="ing-sug-item-cat">${(r.ingredients || []).length} ingrediente${(r.ingredients || []).length !== 1 ? 's' : ''}</span>
+    </div>`
+  ).join('');
+  box.style.display = 'block';
+};
+
+window.hideMealRecipeSuggestions = function() {
+  setTimeout(() => {
+    const box = document.getElementById('comida-recipe-suggestions');
+    if (box) box.style.display = 'none';
+  }, 150);
+};
+
+window.pickMealRecipeSuggestion = function(id) {
+  const receta = (typeof recetasData !== 'undefined') ? recetasData.find(r => r.id === id) : null;
+  if (!receta) return;
+  const input = document.getElementById('comida-input');
+  const box = document.getElementById('comida-recipe-suggestions');
+  if (input) input.value = receta.name;
+  if (box) box.style.display = 'none';
+  mealRecipeSugIndex = -1;
+  updateMealRecipeIngredients(receta.name);
+};
+
+window.onMealInputKeydown = function(e) {
+  const box = document.getElementById('comida-recipe-suggestions');
+  const items = box ? box.querySelectorAll('.ing-sug-item') : [];
+
+  if (box && box.style.display !== 'none' && items.length) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      mealRecipeSugIndex = Math.min(mealRecipeSugIndex + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      mealRecipeSugIndex = Math.max(mealRecipeSugIndex - 1, 0);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const active = items[Math.max(mealRecipeSugIndex, 0)];
+      if (active) {
+        pickMealRecipeSuggestion(active.dataset.id);
+        return;
+      }
+    } else if (e.key === 'Tab' || e.key === 'Escape') {
+      box.style.display = 'none';
+      return;
+    } else {
+      mealRecipeSugIndex = -1;
+      return;
+    }
+
+    items.forEach((el, i) => el.classList.toggle('active', i === mealRecipeSugIndex));
+    return;
+  }
+
+  if (e.key === 'Enter') saveMeal();
 };
 
 // ─── Recipe picker ────────────────────────────────────────
@@ -211,14 +297,7 @@ window.pickReceta = function (id) {
   if (!r) return;
   document.getElementById('comida-input').value = r.name;
   closeModal('modal-receta-picker');
-
-  // Show ingredients block
-  const ings = r.ingredients || [];
-  const block = document.getElementById('comida-receta-ings');
-  const list  = document.getElementById('comida-ings-list');
-  if (!ings.length) { block.style.display = 'none'; return; }
-  list.innerHTML = buildIngRows(ings);
-  block.style.display = 'block';
+  updateMealRecipeIngredients(r.name);
 };
 
 // Build ingredient rows HTML — shared by pickReceta and openMealEdit

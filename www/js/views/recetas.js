@@ -3,10 +3,18 @@
 // ═══════════════════════════════════════════════════════
 
 let recetasData        = [];
+let recetasSearchQ     = '';
 let recetaPhotoFile    = null;
 let recetaIngredients  = [];
 let editingRecetaId    = null;  // null = nueva receta, string = edición
 let ingSugIndex        = -1;    // índice de la sugerencia activa (teclado)
+
+function normalizeRecetaLink(url) {
+  const value = (url || '').trim();
+  if (!value) return '';
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(value)) return value;
+  return `https://${value.replace(/^\/+/, '')}`;
+}
 
 // ─── Compress image to base64 via Canvas ────────────────────
 function compressImage(file, maxPx = 800, quality = 0.72) {
@@ -45,8 +53,23 @@ function initRecetas() {
 
 // ─── Render grid ────────────────────────────────────────
 function renderRecetas() {
+  const q = recetasSearchQ.trim().toLowerCase();
+  const filtered = q
+    ? recetasData.filter(r => {
+        const name = (r.name || '').toLowerCase();
+        const ingredients = (r.ingredients || [])
+          .map(ing => typeof ing === 'object' ? (ing.name || '') : (ing || ''))
+          .join(' ')
+          .toLowerCase();
+        return name.includes(q) || ingredients.includes(q);
+      })
+    : recetasData;
+
   const sub = document.getElementById('recetas-sub');
-  if (sub) sub.textContent = `${recetasData.length} receta${recetasData.length !== 1 ? 's' : ''} guardada${recetasData.length !== 1 ? 's' : ''}`;
+  if (sub) {
+    const totalText = `${recetasData.length} receta${recetasData.length !== 1 ? 's' : ''} guardada${recetasData.length !== 1 ? 's' : ''}`;
+    sub.textContent = q ? `${filtered.length} de ${totalText}` : totalText;
+  }
 
   const grid = document.getElementById('recetas-grid');
   if (!grid) return;
@@ -62,7 +85,16 @@ function renderRecetas() {
     return;
   }
 
-  grid.innerHTML = `<div class="recetas-grid">${recetasData.map(r => {
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="empty-title">Sin resultados</div>
+      <div class="empty-desc">Prueba con otro nombre o ingrediente</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = `<div class="recetas-grid">${filtered.map(r => {
     const numIng = (r.ingredients || []).length;
     const photo  = r.photoData || r.photoURL || null;
     return `<div class="receta-card" onclick="openRecetaDetail('${r.id}')">
@@ -78,6 +110,11 @@ function renderRecetas() {
     </div>`;
   }).join('')}</div>`;
 }
+
+window.filterRecetas = function(q) {
+  recetasSearchQ = q || '';
+  renderRecetas();
+};
 
 // ─── Master ingredients (derivado de todas las recetas) ──────
 // Mantiene compatibilidad local cuando productos.js no está disponible
@@ -182,6 +219,7 @@ window.openAddReceta = function () {
   recetaIngredients = [];
   document.getElementById('receta-modal-title').textContent = 'Nueva receta';
   document.getElementById('receta-name-input').value = '';
+  document.getElementById('receta-link-input').value = '';
   const prev = document.getElementById('receta-photo-preview');
   prev.src = ''; prev.style.display = 'none';
   document.getElementById('receta-photo-input').value  = '';
@@ -202,6 +240,7 @@ window.openEditReceta = function (id) {
   );
   document.getElementById('receta-modal-title').textContent = 'Editar receta';
   document.getElementById('receta-name-input').value = r.name;
+  document.getElementById('receta-link-input').value = r.link || '';
   const photo = r.photoData || r.photoURL || null;
   const prev  = document.getElementById('receta-photo-preview');
   if (photo) { prev.src = photo; prev.style.display = 'block'; }
@@ -221,6 +260,18 @@ window.openRecetaDetail = function (id) {
 
   document.getElementById('detail-receta-name').textContent = r.name;
   document.getElementById('detail-receta-id').value = id;
+
+  const linkWrap = document.getElementById('detail-receta-link-wrap');
+  const linkEl = document.getElementById('detail-receta-link');
+  const normalizedLink = normalizeRecetaLink(r.link || '');
+  if (normalizedLink) {
+    linkEl.href = normalizedLink;
+    linkEl.textContent = 'Abrir enlace';
+    linkWrap.style.display = 'block';
+  } else {
+    linkEl.href = '#';
+    linkWrap.style.display = 'none';
+  }
 
   const img   = document.getElementById('detail-receta-photo');
   const photo = r.photoData || r.photoURL || null;
@@ -300,6 +351,7 @@ window.removeIngredient = function (i) {
 // ─── Save (create or update) ─────────────────────────────
 window.saveReceta = async function () {
   const name = document.getElementById('receta-name-input').value.trim();
+  const link = document.getElementById('receta-link-input').value.trim();
   if (!name) { showToast('Escribe el nombre de la receta'); return; }
 
   const btn = document.getElementById('save-receta-btn');
@@ -319,6 +371,7 @@ window.saveReceta = async function () {
 
     const data = {
       name,
+      link,
       ingredients: [...recetaIngredients],
       photoData
     };

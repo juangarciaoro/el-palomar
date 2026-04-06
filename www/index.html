@@ -252,6 +252,16 @@
         </div>
         <button class="btn-primary" style="padding:0.5rem 0.85rem;font-size:0.85rem" onclick="openAddReceta()">+ Añadir</button>
       </div>
+      <div class="recetas-search-wrap">
+        <input
+          id="recetas-search"
+          class="form-input"
+          type="search"
+          placeholder="Buscar recetas..."
+          oninput="filterRecetas(this.value)"
+          autocomplete="off"
+        />
+      </div>
       <div id="recetas-grid"></div>
     </div>
 
@@ -343,9 +353,13 @@
       <div class="modal-title" id="modal-comida-title">Editar comida</div>
       <div class="form-field">
         <label class="form-label">¿Qué vais a comer?</label>
-        <div style="display:flex;gap:0.5rem;align-items:center">
-          <input class="form-input" id="comida-input" placeholder="ej. Paella, Salmorejo, Filetes…" onkeydown="if(event.key==='Enter') saveMeal()" style="flex:1">
-          <button class="btn-secondary" style="white-space:nowrap;padding:0.5rem 0.7rem;font-size:0.8rem;display:inline-flex;align-items:center;gap:0.35rem" onclick="openRecetaPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Receta</button>
+        <div class="comida-input-wrap">
+          <input class="form-input" id="comida-input" placeholder="ej. Paella, Salmorejo, Filetes…"
+            oninput="filterMealRecipeSuggestions(this.value)"
+            onfocus="filterMealRecipeSuggestions(this.value)"
+            onblur="hideMealRecipeSuggestions()"
+            onkeydown="onMealInputKeydown(event)">
+          <div id="comida-recipe-suggestions" class="ing-suggestions" style="display:none"></div>
         </div>
       </div>
       <div class="form-field">
@@ -471,7 +485,11 @@
       <div class="form-field">
         <label class="form-label">Nombre</label>
         <input class="form-input" id="receta-name-input" placeholder="ej. Paella valenciana, Gazpacho…"
-          onkeydown="if(event.key==='Enter') document.getElementById('receta-ing-input').focus()">
+          onkeydown="if(event.key==='Enter') document.getElementById('receta-link-input').focus()">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Enlace</label>
+        <input class="form-input" id="receta-link-input" type="url" placeholder="https://… o enlace de TikTok, YouTube, blog, etc.">
       </div>
       <div class="form-field">
         <label class="form-label">Foto</label>
@@ -525,6 +543,10 @@
       <img id="detail-receta-photo" alt="" style="display:none">
       <input type="hidden" id="detail-receta-id">
       <div class="modal-title" id="detail-receta-name"></div>
+      <div id="detail-receta-link-wrap" style="display:none">
+        <div class="form-label" style="margin-bottom:0.35rem">Enlace</div>
+        <a id="detail-receta-link" class="receta-link-btn" href="#" target="_blank" rel="noopener noreferrer">Abrir enlace</a>
+      </div>
       <div class="form-label" style="margin-bottom:0.5rem">Ingredientes</div>
       <div id="detail-receta-ingredients"></div>
       <div class="modal-actions" style="margin-top:1.25rem">
