@@ -41,7 +41,7 @@ function renderCompra() {
     const clearBar = document.getElementById('compra-clear-bar');
     if (clearBar) clearBar.style.display = 'none';
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.45L23 6H6"/></svg></div>
+      <div class="empty-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-shopping-cart"></use></svg></div>
       <div class="empty-title">Lista vacía</div>
       <div class="empty-desc">Añade productos con el botón "+"</div>
     </div>`;
@@ -77,7 +77,7 @@ function renderCompra() {
         <div class="cat-checked-toggle" onclick="toggleCatChecked('${safecat}')">
           <span class="cat-checked-label">Ya cogido</span>
           <span class="cat-checked-count">${catChecked.length}</span>
-          <svg class="cat-checked-chevron${isOpen ? ' open' : ''}" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="icon cat-checked-chevron${isOpen ? ' open' : ''}" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-chevron-down"></use></svg>
         </div>
         <div class="cat-checked-list${isOpen ? ' open' : ''}">
           ${catChecked.map(item => _renderShopItem(item)).join('')}

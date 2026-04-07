@@ -22,7 +22,7 @@ function renderTareas() {
   const list = document.getElementById('tareas-list');
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <div class="empty-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-check-square"></use></svg></div>
       <div class="empty-title">Sin tareas</div>
       <div class="empty-desc">¡Todo al día!</div>
     </div>`;

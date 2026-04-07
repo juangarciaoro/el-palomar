@@ -50,6 +50,16 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
 input, textarea, select { font: inherit; }
 ul { list-style: none; }
 
+.icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* ─── LAYOUT ──────────────────────────────────────────── */
 #app { display: flex; flex-direction: column; min-height: 100dvh; }
 

@@ -14,7 +14,7 @@ function renderRecordatorios() {
 
   if (!recordatorios.length) {
     list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <div class="empty-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-bell"></use></svg></div>
       <div class="empty-title">Sin recordatorios</div>
       <div class="empty-desc">Crea avisos para toda la familia</div>
     </div>`;
