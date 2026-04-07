@@ -345,7 +345,7 @@ ul { list-style: none; }
 
 /* ─── VIEWS ───────────────────────────────────────────── */
 .view {
-  display: block;
+  display: none;
   position: absolute;
   top: 0; left: 0; right: 0;
   padding: 1.25rem 1rem 5.5rem;
@@ -356,6 +356,7 @@ ul { list-style: none; }
   will-change: transform, opacity;
 }
 .view.active {
+  display: block;
   position: relative;
   pointer-events: auto;
   opacity: 1;
@@ -1302,7 +1303,12 @@ ul { list-style: none; }
 @media (min-width: 768px) {
 
   /* ── Layout raíz ── */
-  #app { flex-direction: row; height: 100dvh; overflow: hidden; }
+  #app {
+    flex-direction: row;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+  }
   #topbar { display: none !important; }
 
   /* ── Login: centrado, espacioso ── */
@@ -1456,10 +1462,14 @@ ul { list-style: none; }
 
   /* ── Contenido principal ── */
   #main-content {
-    flex: 1; min-width: 0;
-    max-height: 100dvh; overflow-y: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-height: none;
+    overflow: visible;
     padding: 0;
-    max-width: none; margin: 0 0 0 64px;
+    max-width: none;
+    margin: 0 0 0 64px;
+    align-self: flex-start;
   }
   .view { padding: 2rem 2.5rem 2rem; }
   .section-title { font-size: 2.1rem; }
@@ -2205,4 +2215,3 @@ ul { list-style: none; }
 .ing-sug-item.active { background: var(--accent-pale); }
 .ing-sug-item-name { flex: 1; font-weight: 500; }
 .ing-sug-item-cat  { font-size: 0.75rem; color: var(--text-muted); }
-
