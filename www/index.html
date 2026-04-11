@@ -12,7 +12,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
-<link rel="stylesheet" href="../nuevaVista/temporada.css">
 <link rel="preload" href="icons.svg" as="image" type="image/svg+xml">
 </head>
 <body>
@@ -79,15 +78,20 @@
         <button class="dash-section-link" onclick="switchView('comidas')">Ver semana →</button>
       </div>
       <div class="dash-card dash-menu-card" id="dash-menu-today">
-        <div id="dash-menu-day" class="dash-menu-day"></div>
         <div class="dash-menu-meals">
           <div class="dash-menu-slot">
-            <span class="dash-menu-type">Almuerzo</span>
-            <div id="dash-menu-comida" class="dash-menu-empty">Sin planear</div>
+            <div class="dash-menu-content">
+              <span class="dash-menu-type">Almuerzo</span>
+              <div id="dash-menu-comida" class="dash-menu-empty">Sin planear</div>
+            </div>
+            <div id="dash-menu-comida-avatar" class="dash-menu-avatar" title="Ver receta" aria-hidden="true" role="button"></div>
           </div>
           <div class="dash-menu-slot">
-            <span class="dash-menu-type">Cena</span>
-            <div id="dash-menu-cena" class="dash-menu-empty">Sin planear</div>
+            <div class="dash-menu-content">
+              <span class="dash-menu-type">Cena</span>
+              <div id="dash-menu-cena" class="dash-menu-empty">Sin planear</div>
+            </div>
+            <div id="dash-menu-cena-avatar" class="dash-menu-avatar" title="Ver receta" aria-hidden="true" role="button"></div>
           </div>
         </div>
       </div>

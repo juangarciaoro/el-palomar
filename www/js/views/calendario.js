@@ -249,8 +249,12 @@ function renderCalUpcoming() {
     const isTodayFlag = date.toDateString() === new Date().toDateString();
     const label = isTodayFlag ? 'Hoy' :
       DAYS_CAL[(date.getDay() + 6) % 7] + ' ' + date.getDate() + ' ' + MONTHS_CAL[date.getMonth()].slice(0,3);
-    return `<div class="cal-upcoming-date">${label}</div>` +
-      evs.map(ev => renderEventItem(ev)).join('');
+    return `<div class="cal-upcoming-day">
+      <div class="cal-upcoming-date">${label}</div>
+      <div class="cal-upcoming-evs">
+        ${evs.map(ev => renderEventItem(ev)).join('')}
+      </div>
+    </div>`;
   }).join('');
 }
 

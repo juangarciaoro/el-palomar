@@ -1,3 +1,331 @@
+/* ─── SELECTORES EN FILA EN MÓVIL ─────────────── */
+.ts-mobile-selects-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+}
+/* Ambos selects ocupan el 50% y se adaptan */
+.ts-mobile-selects-row select {
+  flex: 1 1 50%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .ts-mobile-selects-row {
+    gap: 6px;
+    margin-bottom: 0.5rem;
+  }
+  .ts-mobile-selects-row select {
+    font-size: 1rem;
+    padding: 0.75rem 0.5rem;
+    flex-basis: 50%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+/* ─── SELECTS TEMPORADA IGUAL QUE COMPRA ─────────────── */
+.ts-filter-select, .ts-tab-select {
+  padding: 0.75rem 0.5rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  transition: var(--transition);
+  font-size: 1rem;
+  font-family: inherit;
+  margin-bottom: 0.5rem;
+}
+.ts-filter-select:focus, .ts-tab-select:focus {
+  border-color: var(--accent);
+}
+@media (max-width: 600px) {
+  .ts-filter-select, .ts-tab-select {
+    font-size: 1rem;
+    padding: 0.75rem 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
+/* ─── PRODUCTOS DE TEMPORADA (vista admin) ─────────────────────────────── */
+#seccion-temporada {
+  padding: 1rem 0 2rem;
+}
+.ts-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ts-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.ts-mes-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ts-nav-btn {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  font-size: 14px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ts-nav-btn:hover {
+  background: var(--accent-pale);
+}
+.ts-mes-lbl {
+  font-size: 13px;
+  color: var(--text);
+  min-width: 90px;
+  text-align: center;
+  font-weight: 500;
+}
+.ts-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.ts-tab {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 400;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ts-tab:hover {
+  background: var(--surface2);
+}
+.ts-tab.active-todos    { background: var(--surface2);  color: var(--text);           border-color: var(--border); }
+.ts-tab.active-frutas   { background: #EAF3DE; color: #3B6D11;   border-color: #97C459; }
+.ts-tab.active-verduras { background: #FAEEDA; color: #854F0B;   border-color: #EF9F27; }
+.ts-tab.active-pescados { background: #E6F1FB;  color: #185FA5;    border-color: #85B7EB; }
+.ts-filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+.ts-filter {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 12px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.ts-filter:hover {
+  background: var(--surface2);
+}
+.ts-filter.sel {
+  border-color: var(--border);
+  color: var(--text);
+  background: var(--surface2);
+}
+.ts-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+.ts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+.ts-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color 0.15s;
+}
+.ts-card:hover {
+  border-color: var(--accent-light);
+}
+.ts-card.optimo-frutas   { border-color: #97C459; }
+.ts-card.optimo-verduras { border-color: #EF9F27; }
+.ts-card.optimo-pescados { border-color: #85B7EB;  }
+.ts-card.inicio          { border-color: #EF9F27; }
+.ts-card.fin             { border-color: #888780;  }
+.ts-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ts-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+.ts-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.badge-optimo-frutas   { background: #EAF3DE; color: #3B6D11; }
+.badge-optimo-verduras { background: #FAEEDA; color: #854F0B; }
+.badge-optimo-pescados { background: #E6F1FB;  color: #185FA5;  }
+.badge-plena           { background: #E1F5EE;  color: #0F6E56;  }
+.badge-inicio          { background: #FAEEDA; color: #854F0B; }
+.badge-fin             { background: #F1EFE8;  color: #888780;  }
+.ts-nombre {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+.ts-cat-pill {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  display: inline-block;
+}
+.pill-frutas   { background: #EAF3DE; color: #3B6D11; }
+.pill-verduras { background: #FAEEDA; color: #854F0B; }
+.pill-pescados { background: #E6F1FB;  color: #185FA5;  }
+.ts-meses-bar {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+.ts-m {
+  width: 8px;
+  height: 4px;
+  border-radius: 2px;
+  background: #e8e8e8;
+  flex-shrink: 0;
+}
+.ts-m.on-frutas    { background: #97C459; }
+.ts-m.opt-frutas   { background: #3B6D11;     }
+.ts-m.on-verduras  { background: #EF9F27; }
+.ts-m.opt-verduras { background: #854F0B;     }
+.ts-m.on-pescados  { background: #85B7EB;  }
+.ts-m.opt-pescados { background: #185FA5;      }
+.ts-m.now {
+  outline: 1.5px solid #EF9F27;
+  outline-offset: 1px;
+}
+.ts-empty {
+  color: #aaa;
+  font-size: 14px;
+  padding: 2rem 0;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  #seccion-temporada {
+    padding: 0.5rem 0 1rem;
+  }
+  .ts-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 0.7rem;
+  }
+  .ts-title {
+    font-size: 1.08rem;
+  }
+  .ts-mes-nav {
+    gap: 4px;
+  }
+  .ts-nav-btn {
+    padding: 4px 12px;
+    font-size: 1rem;
+  }
+  .ts-mes-lbl {
+    font-size: 1rem;
+    min-width: 70px;
+  }
+  .ts-tabs {
+    gap: 2px;
+    margin-bottom: 0.7rem;
+  }
+  .ts-tab {
+    padding: 6px 10px;
+    font-size: 1rem;
+    min-width: 0;
+  }
+  .ts-filter-row {
+    gap: 2px;
+    margin-bottom: 0.5rem;
+  }
+  .ts-filter {
+    padding: 5px 10px;
+    font-size: 0.98rem;
+  }
+  .ts-count {
+    font-size: 0.98rem;
+    margin-bottom: 0.5rem;
+  }
+  .ts-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 5px;
+  }
+  .ts-card {
+    padding: 8px 5px;
+    gap: 3px;
+    min-width: 0;
+  }
+  .ts-emoji {
+    font-size: min(7vw, 1.5rem);
+    line-height: 1;
+    max-width: 1.6em;
+    max-height: 1.6em;
+    display: inline-block;
+  }
+  .ts-badge {
+    font-size: min(3.2vw, 0.8rem);
+    padding: 2px 5px;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ts-nombre {
+    font-size: min(4vw, 1.05rem);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ts-cat-pill {
+    font-size: min(3vw, 0.8rem);
+    padding: 1px 5px;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ts-meses-bar {
+    gap: 1px;
+  }
+  .ts-m {
+    width: 6px;
+    height: 3px;
+  }
+  .ts-empty {
+    font-size: 1rem;
+    padding: 1.2rem 0;
+  }
+}
 /* ─── TOKENS ─────────────────────────────────────────── */
 :root {
   --bg:        #FFFBF5;
@@ -1251,12 +1579,14 @@ ul { list-style: none; }
   background: var(--accent-light);
 }
 .cal-day.today .cal-dot { background: white; }
+
 .cal-event-item {
   display: flex; align-items: flex-start; gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
 }
-.cal-event-item:last-child { border-bottom: none; }
+/* Per-day grouping: scope last-child rule to avoid bottom border for the last event of each day */
+.cal-upcoming-evs .cal-event-item:last-child { border-bottom: none; }
 .cal-event-time {
   flex-shrink: 0;
   font-family: 'Playfair Display', serif;
@@ -1286,7 +1616,7 @@ ul { list-style: none; }
   font-size: 0.87rem;
   color: var(--text-muted);
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  /* no full-width bottom border here to avoid a duplicate line; side lines drawn by pseudo elements */
 }
 .cal-upcoming-date::before,
 .cal-upcoming-date::after {
@@ -1294,6 +1624,11 @@ ul { list-style: none; }
   flex: 1;
   height: 1px;
   background: var(--border);
+  align-self: center;
+}
+
+.cal-upcoming-evs {
+  /* container for per-day events; separators handled by .cal-event-item borders */
 }
 
 /* ─── MOBILE: nav wrappers ───────────────────────── */
@@ -1719,7 +2054,8 @@ ul { list-style: none; }
 
 /* — Menú del día — */
 .dash-menu-card {
-  border-top: 2px solid var(--accent);
+    /* Removed top accent border per design preference */
+  border-top: none;
   overflow: hidden;
 }
 .dash-menu-day {
@@ -1747,10 +2083,19 @@ ul { list-style: none; }
   grid-template-columns: 1fr 1fr;
 }
 .dash-menu-slot {
+  /* Layout: contenido a la izquierda, panel de imagen a la derecha que ocupa toda la altura */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.dash-menu-content {
+  flex: 1 1 auto;
+  padding: 0.55rem 1.2rem 1.15rem 1.2rem; /* conservar espaciado interior para el texto */
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.38rem;
-  padding: 0.55rem 1.2rem 1.15rem;
 }
 .dash-menu-slot + .dash-menu-slot {
   border-left: 1px solid var(--border);
@@ -1777,6 +2122,125 @@ ul { list-style: none; }
   font-size: 0.88rem;
   color: var(--border);
   line-height: 1.3;
+}
+
+/* Avatar circular en la tarjeta del menú */
+.dash-menu-avatar {
+  position: relative;
+  flex: 0 0 220px; /* ancho fijo del panel — reducido a petición */
+  border-radius: 0 10px 10px 0;
+  background-color: var(--border);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  display: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.dash-menu-avatar:focus { outline: 3px solid rgba(0,0,0,0.08); outline-offset: 2px; }
+
+/* Fade: lateral en escritorio (por defecto), superior en móvil (override en media query) */
+.dash-menu-avatar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 120px; /* ancho del fade lateral en escritorio */
+  pointer-events: none;
+  border-radius: 0;
+  /* Gradiente lateral (izquierda -> derecha) */
+  background: linear-gradient(to right,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,0.96) 10%,
+    rgba(255,255,255,0.85) 28%,
+    rgba(255,255,255,0.55) 52%,
+    rgba(255,255,255,0) 100%
+  );
+  z-index: 2;
+}
+
+/* Dark mode: usar un overlay oscuro semitransparente */
+.dark .dash-menu-avatar::before {
+  /* Dark mode lateral gradient */
+  background: linear-gradient(to right,
+    rgba(36,30,24,1) 0%,
+    rgba(36,30,24,0.96) 10%,
+    rgba(36,30,24,0.85) 28%,
+    rgba(36,30,24,0.55) 52%,
+    rgba(36,30,24,0) 100%
+  );
+}
+
+/* Desktop tweaks: remove rounding on left and remove right rounding for the comida panel */
+@media (min-width: 521px) {
+  .dash-menu-avatar::before { border-radius: 0; }
+  #dash-menu-comida-avatar { border-radius: 0; }
+  #dash-menu-comida-avatar::before { border-radius: 0; }
+  #dash-menu-comida-avatar img.dash-menu-avatar-img { border-radius: 0; }
+}
+
+/* Imagen interna que llena el panel (más fiable que background-image) */
+.dash-menu-avatar img.dash-menu-avatar-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  z-index: 1; /* debajo del fade (::before has z-index:2) */
+}
+
+/* Ajustes responsivos para pantallas más pequeñas */
+@media (max-width: 1200px) {
+  .dash-menu-content { padding-right: 1rem; }
+  .dash-menu-avatar { flex: 0 0 200px; }
+  /* Slightly narrower lateral fade on mid-sized screens */
+  .dash-menu-avatar::before { width: 56px; }
+}
+
+@media (max-width: 800px) {
+  .dash-menu-content { padding-right: 0.8rem; }
+  .dash-menu-avatar { flex: 0 0 160px; }
+  .dash-menu-avatar::before { width: 48px; }
+}
+
+@media (max-width: 520px) {
+  /* Volver a apilar en móvil: imagen debajo o al final */
+  .dash-menu-slot { flex-direction: column; }
+  .dash-menu-content { padding: 0.55rem 1rem 0.8rem 1rem; }
+  /* Imagen más estrecha en altura en móvil (ancho sigue siendo 100%) */
+  .dash-menu-avatar { flex: 0 0 auto; width: 100%; height: 96px; }
+  /* Mobile: replace lateral overlay with a top overlay */
+  .dash-menu-avatar::before { left: 0; right: 0; top: 0; bottom: auto; height: 48px; width: auto; border-radius: 0; 
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,1) 0%,
+      rgba(255,255,255,0.96) 10%,
+      rgba(255,255,255,0.85) 28%,
+      rgba(255,255,255,0.55) 52%,
+      rgba(255,255,255,0) 100%
+    );
+  }
+
+  .dark .dash-menu-avatar::before { background: linear-gradient(to bottom,
+      rgba(36,30,24,1) 0%,
+      rgba(36,30,24,0.96) 10%,
+      rgba(36,30,24,0.85) 28%,
+      rgba(36,30,24,0.55) 52%,
+      rgba(36,30,24,0) 100%
+    ); }
+
+  /* Mobile: solo redondear las esquinas inferiores externas
+     - Comida (izquierda): redondear solo inferior izquierdo
+     - Cena (derecha): redondear solo inferior derecho */
+  #dash-menu-comida-avatar { border-radius: 0 0 0 var(--radius); }
+  #dash-menu-comida-avatar::before { border-radius: 0 0 0 var(--radius); }
+  #dash-menu-comida-avatar img.dash-menu-avatar-img { border-radius: 0 0 0 var(--radius); }
+
+  #dash-menu-cena-avatar { border-radius: 0 0 var(--radius) 0; }
+  #dash-menu-cena-avatar::before { border-radius: 0 0 var(--radius) 0; }
+  #dash-menu-cena-avatar img.dash-menu-avatar-img { border-radius: 0 0 var(--radius) 0; }
 }
 
 .dash-progress-bar {

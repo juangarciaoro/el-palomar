@@ -3,7 +3,7 @@
 (function() {
   window.TemporadaWidget = (() => {
     const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const CAT_LABEL = { frutas: 'Fruta', verduras: 'Verdura', pescados: 'Pescado' };
+    const CAT_LABEL = { frutas: '🍎 Fruta', verduras: '🥬 Verdura', pescados: '🐟 Pescado' };
     let DATA = null;
     let mes  = new Date().getMonth() + 1;
     let tab  = 'todos';
@@ -72,10 +72,14 @@
     }
     function setTab(t) {
       tab = t;
-      filtro = 'todos';
-      root.querySelectorAll('.ts-tab').forEach(btn => {
-        btn.className = 'ts-tab' + (btn.dataset.tab === t ? ` active-${t}` : '');
-      });
+      // Solo resetear filtro si cambia de tipo de categoría (no en móvil)
+      const isMobile = window.innerWidth <= 600;
+      if (!isMobile) filtro = 'todos';
+      if (!isMobile) {
+        root.querySelectorAll('.ts-tab').forEach(btn => {
+          btn.className = 'ts-tab' + (btn.dataset.tab === t ? ` active-${t}` : '');
+        });
+      }
       renderFilters();
       render();
     }
@@ -86,38 +90,79 @@
     }
     function renderFilters() {
       const items = [
-        { id: 'todos',  label: 'Todos' },
-        { id: 'optimo', label: 'En su punto' },
-        { id: 'inicio', label: 'Entrando' },
-        { id: 'plena',  label: 'Plena temporada' },
-        { id: 'fuera',  label: 'Fuera de temporada' },
+        { id: 'todos',  label: '📋 Todos' },
+        { id: 'optimo', label: '👌 En su punto' },
+        { id: 'inicio', label: '🌱 Entrando' },
+        { id: 'plena',  label: '🌻 Plena temporada' },
+        { id: 'fuera',  label: '❌ Fuera de temporada' },
       ];
-      root.querySelector('.ts-filter-row').innerHTML = items.map(f =>
-        `<button class="ts-filter${filtro === f.id ? ' sel' : ''}" data-filtro="${f.id}">${f.label}</button>`
-      ).join('');
-      root.querySelectorAll('.ts-filter').forEach(btn => {
-        btn.addEventListener('click', () => setFiltro(btn.dataset.filtro));
-      });
+      const isMobile = window.innerWidth <= 600;
+      if (isMobile) {
+        // No hacer nada: el filtro ya está en la fila de selects
+        root.querySelector('.ts-filter-row').innerHTML = '';
+      } else {
+        // Botones en desktop
+        root.querySelector('.ts-filter-row').innerHTML = items.map(f =>
+          `<button class="ts-filter${filtro === f.id ? ' sel' : ''}" data-filtro="${f.id}">${f.label}</button>`
+        ).join('');
+        root.querySelectorAll('.ts-filter').forEach(btn => {
+          btn.addEventListener('click', () => setFiltro(btn.dataset.filtro));
+        });
+      }
     }
     function buildHTML() {
+      const isMobile = window.innerWidth <= 600;
       root.innerHTML = `
         <div class="ts-header">
-          <span class="ts-title">Productos de temporada</span>
           <div class="ts-mes-nav">
             <button class="ts-nav-btn" id="ts-btn-prev">&#8249;</button>
             <span class="ts-mes-lbl" id="ts-lbl-mes"></span>
             <button class="ts-nav-btn" id="ts-btn-next">&#8250;</button>
           </div>
         </div>
-        <div class="ts-tabs">
-          <button class="ts-tab" data-tab="todos">Todos</button>
-          <button class="ts-tab" data-tab="frutas">Frutas</button>
-          <button class="ts-tab" data-tab="verduras">Verduras</button>
-          <button class="ts-tab" data-tab="pescados">Pescado y marisco</button>
-        </div>
+        <div class="ts-tabs"></div>
         <div class="ts-filter-row"></div>
         <div class="ts-count"></div>
         <div class="ts-grid"></div>`;
+      // Tabs como select en móvil
+      const tabs = [
+        { id: 'todos', label: '📋 Todos' },
+        { id: 'frutas', label: '🍎 Frutas' },
+        { id: 'verduras', label: '🥬 Verduras' },
+        { id: 'pescados', label: '🐟 Pescado y marisco' }
+      ];
+      if (isMobile) {
+        // Contenedor flex para los dos selects
+        root.querySelector('.ts-tabs').innerHTML = `
+          <div class="ts-mobile-selects-row">
+            <select class="ts-tab-select">
+              ${tabs.map(t => `<option value="${t.id}"${tab === t.id ? ' selected' : ''}>${t.label}</option>`).join('')}
+            </select>
+            <select class="ts-filter-select"></select>
+          </div>
+        `;
+        // Renderizar las opciones del filtro en el select correspondiente (con emojis)
+        const filterItems = [
+          { id: 'todos',  label: '📋 Todos' },
+          { id: 'optimo', label: '👌 En su punto' },
+          { id: 'inicio', label: '🌱 Entrando' },
+          { id: 'plena',  label: '🌻 Plena temporada' },
+          { id: 'fuera',  label: '❌ Fuera de temporada' },
+        ];
+        const filterSelect = root.querySelector('.ts-filter-select');
+        filterSelect.innerHTML = filterItems.map(f => `<option value="${f.id}"${filtro === f.id ? ' selected' : ''}>${f.label}</option>`).join('');
+        root.querySelector('.ts-tab-select').addEventListener('change', e => setTab(e.target.value));
+        filterSelect.addEventListener('change', e => setFiltro(e.target.value));
+        // Vaciar la fila de filtros para que no se duplique
+        root.querySelector('.ts-filter-row').innerHTML = '';
+      } else {
+        root.querySelector('.ts-tabs').innerHTML = tabs.map(t =>
+          `<button class="ts-tab${tab === t.id ? ' active-' + t.id : ''}" data-tab="${t.id}">${t.label}</button>`
+        ).join('');
+        root.querySelectorAll('.ts-tab').forEach(btn => {
+          btn.addEventListener('click', () => setTab(btn.dataset.tab));
+        });
+      }
       root.querySelector('#ts-btn-prev').addEventListener('click', () => {
         mes = mes === 1 ? 12 : mes - 1;
         root.querySelector('#ts-lbl-mes').textContent = MESES[mes];
@@ -127,9 +172,6 @@
         mes = mes === 12 ? 1 : mes + 1;
         root.querySelector('#ts-lbl-mes').textContent = MESES[mes];
         render();
-      });
-      root.querySelectorAll('.ts-tab').forEach(btn => {
-        btn.addEventListener('click', () => setTab(btn.dataset.tab));
       });
       root.querySelector('#ts-lbl-mes').textContent = MESES[mes];
     }
