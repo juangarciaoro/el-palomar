@@ -1,6 +1,6 @@
 // ─── UI HELPERS ───────────────────────────────────────────
 
-const NAV_VIEWS = ['dashboard','compra','comidas','tareas','calendario','recetas'];
+const NAV_VIEWS = ['dashboard','compra','comidas','tareas','calendario','recetas','productos-temporada'];
 
 // ─── DARK MODE ────────────────────────────────────────────
 (function() {
@@ -33,16 +33,19 @@ window.switchView = function(view, direction) {
   const prevEl = document.getElementById('view-' + prevView);
   const nextEl = document.getElementById('view-' + view);
 
+  // Inicializar la vista de productos de temporada si corresponde
+  if (view === 'productos-temporada' && window.showProductosTemporadaView) {
+    window.showProductosTemporadaView();
+  }
+
   // Preparar la vista entrante fuera de pantalla
-  nextEl.classList.remove('active','slide-enter-left','slide-enter-right','slide-exit-left','slide-exit-right');
-  nextEl.classList.add(direction === 'left' ? 'slide-enter-left' : 'slide-enter-right');
-
-  // Forzar reflow para que la transición arranque
-  nextEl.getBoundingClientRect();
-
-  // Activar transición
-  nextEl.classList.remove('slide-enter-left','slide-enter-right');
-  nextEl.classList.add('active');
+  if (nextEl) {
+    nextEl.classList.remove('active','slide-enter-left','slide-enter-right','slide-exit-left','slide-exit-right');
+    nextEl.classList.add(direction === 'left' ? 'slide-enter-left' : 'slide-enter-right');
+    nextEl.getBoundingClientRect();
+    nextEl.classList.remove('slide-enter-left','slide-enter-right');
+    nextEl.classList.add('active');
+  }
 
   // Salida de la vista anterior
   if (prevEl) {

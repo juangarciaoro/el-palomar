@@ -124,4 +124,8 @@
   <symbol id="i-chevron-down" viewBox="0 0 24 24">
     <path d="m6 9 6 6 6-6"/>
   </symbol>
+
+  <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 21c6.627 0 12-5.373 12-12V3s-9 0-12 9c-1.5 4.5 1.5 9 6 9z"/>
+  </symbol>
 </svg>

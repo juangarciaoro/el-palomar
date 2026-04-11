@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="../nuevaVista/temporada.css">
 <link rel="preload" href="icons.svg" as="image" type="image/svg+xml">
 </head>
 <body>
@@ -651,6 +652,9 @@
     <button class="drawer-item" onclick="closeUserDrawer(); switchView('productos')">
       <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-package"></use></svg></span><span>Catálogo de productos</span>
     </button>
+    <button class="drawer-item" onclick="closeUserDrawer(); switchView('productos-temporada')">
+      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-leaf"></use></svg></span><span>Productos de temporada</span>
+    </button>
     <button class="drawer-item" onclick="closeUserDrawer(); switchView('categorias')">
       <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-tag"></use></svg></span><span>Categorías de productos</span>
     </button>
@@ -677,6 +681,7 @@
 <script src="js/views/recetas.js"></script>
 <script src="js/views/categorias.js"></script>
 <script src="js/views/dashboard.js"></script>
+<script src="js/views/productos-temporada.js"></script>
 <script src="js/data.js"></script>
 <script src="js/views/calendario.js"></script>
 <script src="js/auth.js"></script>

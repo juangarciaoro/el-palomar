@@ -8,8 +8,16 @@ function isNative() {
   return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 }
 
+
 let db = null;
 let unsubscribers = [];
+
+// Asegura que db esté en window para acceso global
+Object.defineProperty(window, 'db', {
+  get: () => db,
+  set: v => { db = v; },
+  configurable: true
+});
 
 if (CONFIGURED) {
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -93,3 +101,17 @@ function initData() {
     renderTareas();
   }
 }
+
+// --- FIRESTORE: Productos de temporada ---
+window.getProductosTemporada = async function() {
+  if (!window.db) return null;
+  const snap = await window.db.collection('productos-temporada').get();
+  const frutas = [], verduras = [], pescados = [];
+  snap.forEach(doc => {
+    const d = doc.data();
+    if (d.categoria === 'frutas') frutas.push(d);
+    else if (d.categoria === 'verduras') verduras.push(d);
+    else if (d.categoria === 'pescados') pescados.push(d);
+  });
+  return { frutas, verduras, pescados };
+};

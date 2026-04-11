@@ -3,6 +3,8 @@
 const Alexa  = require('ask-sdk');
 const https  = require('https');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 // --- Service Account ----------------------------------------------------------
 let _sa = null;
