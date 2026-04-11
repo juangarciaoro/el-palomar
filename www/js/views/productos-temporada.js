@@ -164,7 +164,7 @@
       setTab('todos');
     }
     function getDeTemporada(categoria = 'todos', mesNum = null) {
-      if (!DATA) return [];
+      if (!DATA) return []; 
       const m = mesNum || new Date().getMonth() + 1;
       const cats = categoria === 'todos' ? ['frutas', 'verduras', 'pescados'] : [categoria];
       return cats.flatMap(c =>
