@@ -6,6 +6,50 @@ const DAYS_ES   = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','D
 const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 let mealRecipeSugIndex = -1;
 
+function _normMeal(s) {
+  if (!s) return '';
+  return s.toString().trim().toLowerCase()
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function applyComidasAvatars() {
+  document.querySelectorAll('#comidas-grid .cm-day-avatar[data-meal]').forEach(function(el) {
+    const mealName = el.dataset.meal;
+    el.innerHTML = '';
+    el.style.display = 'none';
+    el.onclick = null;
+    el.onkeydown = null;
+    el.removeAttribute('aria-label');
+    el.setAttribute('aria-hidden', 'true');
+    el.tabIndex = -1;
+    if (!mealName) return;
+    const target = _normMeal(mealName);
+    let matched = null;
+    if (typeof recetasData !== 'undefined' && recetasData && recetasData.length) {
+      matched = recetasData.find(r => _normMeal(r.name) === target);
+      if (!matched) matched = recetasData.find(r => _normMeal(r.name).includes(target) || target.includes(_normMeal(r.name)));
+      if (!matched) matched = recetasData.find(r => _normMeal(r.name).startsWith(target) || _normMeal(r.name).endsWith(target));
+    }
+    if (!matched) return;
+    const photo = matched.photoData || matched.photoURL || null;
+    if (!photo) return;
+    const img = document.createElement('img');
+    img.className = 'dash-menu-avatar-img';
+    img.alt = matched.name || 'Receta';
+    img.loading = 'lazy';
+    img.src = photo;
+    el.appendChild(img);
+    el.style.display = 'block';
+    el.setAttribute('aria-hidden', 'false');
+    el.setAttribute('aria-label', 'Ver receta ' + (matched.name || ''));
+    el.tabIndex = 0;
+    el.onclick = function(e) { e.stopPropagation(); if (typeof openRecetaDetail === 'function') openRecetaDetail(matched.id); };
+    el.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.onclick(e); } };
+  });
+}
+
 function getWeekDates(offset) {
   const now = new Date();
   const day = now.getDay(); // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
@@ -54,62 +98,81 @@ function renderComidas() {
         (isToday(d) ? '<span class="today-badge">Hoy</span>' : '') +
       '</div>' +
       '<div class="meals-row">' +
-        (showComida ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
-          + '<div class="meal-type">Almuerzo</div>'
-          + (data.comida
-            ? '<div class="meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.comidaNotes + '</div>' : '')
-            : '<div class="meal-empty">Sin planear</div>')
-          + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span></div>' : '') +
-        (showCena ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
-          + '<div class="meal-type">Cena</div>'
-          + (data.cena
-            ? '<div class="meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.cenaNotes + '</div>' : '')
-            : '<div class="meal-empty">Sin planear</div>')
-          + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span></div>' : '') +
+        (showComida
+          ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
+              + '<div class="meal-slot-content">'
+              + '<div class="meal-type">Almuerzo</div>'
+              + (data.comida
+                ? '<div class="meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.comidaNotes + '</div>' : '')
+                : '<div class="meal-empty">Sin planear</div>')
+              + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
+              + '</div>'
+              + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+              + '</div>'
+          : '<div class="meal-slot meal-slot-blank"></div>') +
+        (showCena
+          ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
+              + '<div class="meal-slot-content">'
+              + '<div class="meal-type">Cena</div>'
+              + (data.cena
+                ? '<div class="meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.cenaNotes + '</div>' : '')
+                : '<div class="meal-empty">Sin planear</div>')
+              + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
+              + '</div>'
+              + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+              + '</div>'
+          : '<div class="meal-slot meal-slot-blank"></div>') +
       '</div></div>';
   }).join('');
 
-  // ── DESKTOP: tabla 8 columnas (1 placeholder + 8 días) ───────
-  const dayHeads = dates.map(function(d) {
-    const dayName = DAYS_ES[d.getDay()===0?6:d.getDay()-1];
-    return '<div class="cm-day-head ' + (isToday(d) ? 'today' : '') + '">' +
-      '<span class="cm-day-name">' + dayName + '</span>' +
-      '<span class="cm-day-date">' + d.getDate() + ' ' + MONTHS_ES[d.getMonth()] + '</span>' +
-      (isToday(d) ? '<span class="today-badge">Hoy</span>' : '') +
-    '</div>';
-  }).join('');
+  // ── DESKTOP: tarjetas verticales por día ───────
+  const desktopHtml = '<div class="cm-week-list">' + dates.map(function(d, idx) {
+    const key        = dateKey(d);
+    const data       = comidasData[key] || {};
+    const showComida = idx > 0;
+    const showCena   = idx < dates.length - 1;
+    const dayName    = DAYS_ES[d.getDay()===0?6:d.getDay()-1];
+    const todayCls   = isToday(d) ? ' today' : '';
 
-  const comidaSlots = dates.map(function(d, idx) {
-    if (idx === 0) return '<div class="cm-slot cm-slot-blank"></div>';
-    const key  = dateKey(d);
-    const data = comidasData[key] || {};
-    return '<div class="cm-slot ' + (isToday(d) ? 'today' : '') + '" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
-      + (data.comida
-          ? '<div class="cm-meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div class="cm-meal-notes">' + data.comidaNotes + '</div>' : '')
-          : '<div class="cm-meal-empty">Sin planear</div>')
-      + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span></div>';
-  }).join('');
+    const comidaSlot = showComida
+      ? '<div class="cm-day-slot' + todayCls + '" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
+          + '<div class="cm-slot-content">'
+          + '<span class="cm-day-slot-type"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-sun"></use></svg> Almuerzo</span>'
+          + (data.comida
+              ? '<div class="cm-meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div class="cm-meal-notes">' + data.comidaNotes + '</div>' : '')
+              : '<div class="cm-meal-empty">Sin planear</div>')
+          + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
+          + '</div>'
+          + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+          + '</div>'
+      : '<div class="cm-day-slot cm-day-slot-blank"></div>';
 
-  const cenaSlots = dates.map(function(d, idx) {
-    if (idx === dates.length - 1) return '<div class="cm-slot cm-slot-blank"></div>';
-    const key  = dateKey(d);
-    const data = comidasData[key] || {};
-    return '<div class="cm-slot ' + (isToday(d) ? 'today' : '') + '" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
-      + (data.cena
-          ? '<div class="cm-meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div class="cm-meal-notes">' + data.cenaNotes + '</div>' : '')
-          : '<div class="cm-meal-empty">Sin planear</div>')
-      + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span></div>';
-  }).join('');
+    const cenaSlot = showCena
+      ? '<div class="cm-day-slot' + todayCls + '" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
+          + '<div class="cm-slot-content">'
+          + '<span class="cm-day-slot-type"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-moon"></use></svg> Cena</span>'
+          + (data.cena
+              ? '<div class="cm-meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div class="cm-meal-notes">' + data.cenaNotes + '</div>' : '')
+              : '<div class="cm-meal-empty">Sin planear</div>')
+          + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
+          + '</div>'
+          + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+          + '</div>'
+      : '<div class="cm-day-slot cm-day-slot-blank"></div>';
 
-  const desktopHtml =
-    '<div class="cm-table">' +
-      '<div class="cm-label-cell"></div>' + dayHeads +
-      '<div class="cm-row-label"><span class="cm-row-emoji"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-sun"></use></svg></span><span class="cm-row-text">Comida</span></div>' + comidaSlots +
-      '<div class="cm-row-label"><span class="cm-row-emoji"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-moon"></use></svg></span><span class="cm-row-text">Cena</span></div>' + cenaSlots +
-    '</div>';
+    return '<div class="cm-day-card' + todayCls + '">'
+      + '<div class="cm-day-card-header">'
+          + '<span class="cm-day-name">' + dayName + '</span>'
+          + '<span class="cm-day-date">' + d.getDate() + ' ' + MONTHS_ES[d.getMonth()] + '</span>'
+          + (isToday(d) ? '<span class="today-badge">Hoy</span>' : '')
+      + '</div>'
+      + '<div class="cm-day-meals">' + comidaSlot + cenaSlot + '</div>'
+      + '</div>';
+  }).join('') + '</div>';
 
   document.getElementById('comidas-grid').innerHTML =
     '<div class="comidas-mobile">' + mobileHtml + '</div>' + desktopHtml;
+  applyComidasAvatars();
 }
 
 window.changeWeek = function(dir) { weekOffset += dir; renderComidas(); };

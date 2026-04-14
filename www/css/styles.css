@@ -1211,7 +1211,7 @@ ul { list-style: none; }
   display: grid; grid-template-columns: 1fr 1fr;
 }
 .meal-slot {
-  padding: 0.65rem 0.85rem;
+  display: flex; flex-direction: row; align-items: stretch;
   min-height: 60px;
   cursor: pointer;
   transition: var(--transition);
@@ -1219,6 +1219,16 @@ ul { list-style: none; }
 }
 .meal-slot:first-child { border-right: 1px solid var(--border); }
 .meal-slot:hover { background: var(--accent-pale); }
+.meal-slot-blank { background: var(--surface2) !important; cursor: default; pointer-events: none; }
+.meal-slot-blank:hover { background: var(--surface2) !important; }
+.meal-slot-content {
+  flex: 1 1 auto;
+  padding: 0.65rem 0.85rem;
+  position: relative;
+  display: flex; flex-direction: column;
+}
+/* Avatar foto receta en mobile: reutiliza cm-day-avatar, ancho reducido */
+.meal-slot .cm-day-avatar { flex: 0 0 80px; border-radius: 0; }
 .meal-type {
   font-size: 0.61rem;
   font-weight: 700;
@@ -1246,8 +1256,45 @@ ul { list-style: none; }
 }
 .meal-slot:hover .meal-add-icon { color: var(--accent); }
 
-/* Desktop table hidden by default (mobile-first) */
+/* ─── RECETA AVATAR EN COMIDAS (base — aplica en móvil y desktop) ─── */
+.cm-day-avatar {
+  position: relative;
+  background-color: var(--border);
+  background-size: cover; background-position: center;
+  display: none; cursor: pointer; overflow: hidden;
+}
+.cm-day-avatar::before {
+  content: ''; position: absolute;
+  left: 0; right: 0; top: 0; bottom: auto;
+  height: 48px; width: auto;
+  pointer-events: none; z-index: 2;
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,0.96) 10%,
+    rgba(255,255,255,0.85) 28%,
+    rgba(255,255,255,0.55) 52%,
+    rgba(255,255,255,0) 100%
+  );
+}
+.dark .cm-day-avatar::before {
+  background: linear-gradient(to bottom,
+    rgba(36,30,24,1) 0%,
+    rgba(36,30,24,0.96) 10%,
+    rgba(36,30,24,0.85) 28%,
+    rgba(36,30,24,0.55) 52%,
+    rgba(36,30,24,0) 100%
+  );
+}
+.cm-day-avatar img.dash-menu-avatar-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block; z-index: 1;
+}
+.cm-day-avatar:focus { outline: 3px solid rgba(0,0,0,0.08); outline-offset: 2px; }
+
+/* Desktop table/list hidden by default (mobile-first) */
 .cm-table { display: none; }
+.cm-week-list { display: none; }
 
 /* ─── TAREAS ──────────────────────────────────────────── */
 .tarea-group-header {
@@ -1819,61 +1866,81 @@ ul { list-style: none; }
   .view { padding: 2rem 2.5rem 2rem; }
   .section-title { font-size: 2.1rem; }
 
-  /* Comidas: tabla 8 columnas en desktop */
+  /* Comidas: tarjetas verticales en desktop */
   .comidas-mobile { display: none; }
-  #comidas-grid { overflow-x: auto; }
-  .cm-table {
-    display: grid;
-    grid-template-columns: 48px repeat(8, minmax(110px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    min-width: 700px;
-  }
-  .cm-label-cell, .cm-day-head, .cm-row-label, .cm-slot {
+  #comidas-grid { overflow-x: unset; }
+  .cm-week-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .cm-day-card {
     background: var(--surface);
-    padding: 0.5rem 0.45rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
   }
-  .cm-label-cell, .cm-day-head, .cm-row-label {
-    background: var(--surface2);
+  .cm-day-card.today {
+    box-shadow: var(--shadow-lg);
+    border: 1.5px solid var(--accent);
   }
-  .cm-day-head {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 0.12rem; text-align: center;
+  .cm-day-card-header {
+    display: flex; align-items: center; gap: 0.65rem;
+    padding: 0.7rem 1.2rem 0.6rem;
+    border-bottom: 1px solid var(--border);
   }
-  .cm-day-head.today {
-    background: var(--accent-pale); color: var(--accent);
-    border-bottom: 2px solid var(--accent);
+  .cm-day-card.today .cm-day-card-header {
+    background: var(--accent-pale);
+    border-bottom-color: var(--accent);
   }
-  .cm-day-name { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 400; font-size: 0.82rem; }
-  .cm-day-date { font-size: 0.67rem; color: var(--text-muted); }
-  .cm-day-head.today .cm-day-date { color: var(--accent); }
-  .cm-day-head .today-badge { font-size: 0.58rem; margin-top: 0.1rem; }
-  .cm-row-label {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 0.15rem; text-align: center;
+  .cm-day-name {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-weight: 400; font-size: 0.95rem; color: var(--text);
   }
-  .cm-row-emoji { display: flex; align-items: center; justify-content: center; }
-  .cm-row-text {
-    font-size: 0.6rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    color: var(--text-muted);
+  .cm-day-card.today .cm-day-name { color: var(--accent); }
+  .cm-day-date { font-size: 0.7rem; color: var(--text-muted); }
+  .cm-day-card.today .cm-day-date { color: var(--accent); opacity: 0.8; }
+  .cm-day-card-header .today-badge { font-size: 0.58rem; }
+  .cm-day-meals { display: grid; grid-template-columns: 1fr 1fr; }
+  .cm-day-slot {
+    position: relative;
+    cursor: pointer; transition: var(--transition); min-height: 80px;
+    display: flex; flex-direction: row; align-items: stretch;
   }
-  .cm-slot {
-    position: relative; min-height: 72px;
-    cursor: pointer; transition: var(--transition);
+  .cm-day-slot:hover { background: var(--accent-pale); }
+  .cm-day-slot + .cm-day-slot { border-left: 1px solid var(--border); }
+  .cm-day-slot.today { border-bottom: 2px solid var(--accent); }
+  .cm-day-slot-blank { background: var(--surface2) !important; cursor: default; }
+  .cm-slot-content {
+    flex: 1 1 auto; padding: 0.65rem 1.2rem 1.1rem;
+    display: flex; flex-direction: column; gap: 0.3rem; position: relative;
   }
-  .cm-slot:hover { background: var(--accent-pale); }
-  .cm-slot.today { border-bottom: 2px solid var(--accent); }
-  .cm-slot-blank {
-    background: var(--surface2) !important;
-    cursor: default;
+  .cm-day-slot-type {
+    font-size: 0.58rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--text-muted); margin-bottom: 0.2rem;
+    display: flex; align-items: center; gap: 0.3rem;
   }
-  .cm-meal-text { font-family: 'Playfair Display', serif; font-weight: 400; font-size: 0.85rem; line-height: 1.3; }
+  .cm-day-slot-type .icon { width: 11px; height: 11px; }
+  .cm-meal-text { font-family: 'Playfair Display', serif; font-weight: 400; font-size: 0.97rem; line-height: 1.35; }
   .cm-meal-notes { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
-  .cm-meal-empty { font-size: 0.75rem; color: var(--border); font-style: italic; }
-  .cm-slot .meal-add-icon { position: absolute; bottom: 4px; right: 6px; display: flex; align-items: center; }
+  .cm-meal-empty { font-size: 0.82rem; color: var(--border); font-style: italic; }
+  .cm-slot-content .meal-add-icon { position: absolute; bottom: 6px; right: 8px; display: flex; align-items: center; }
+  /* Panel de foto de receta — desktop: 110px lateral */
+  .cm-day-avatar { flex: 0 0 110px; }
+  .cm-day-avatar::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 56px;
+    pointer-events: none; z-index: 2;
+    background: linear-gradient(to right,
+      rgba(255,255,255,1) 0%,
+      rgba(255,255,255,0.9) 25%,
+      rgba(255,255,255,0) 100%
+    );
+  }
+  .dark .cm-day-avatar::before {
+    background: linear-gradient(to right,
+      rgba(36,30,24,1) 0%,
+      rgba(36,30,24,0.9) 25%,
+      rgba(36,30,24,0) 100%
+    );
+  }
 
   /* Filtros de tareas: wrap en desktop */
   .tareas-filters { flex-wrap: wrap; overflow-x: visible; }
@@ -2241,6 +2308,33 @@ ul { list-style: none; }
   #dash-menu-cena-avatar { border-radius: 0 0 var(--radius) 0; }
   #dash-menu-cena-avatar::before { border-radius: 0 0 var(--radius) 0; }
   #dash-menu-cena-avatar img.dash-menu-avatar-img { border-radius: 0 0 var(--radius) 0; }
+
+  /* ── Comidas móvil: apilar contenido + foto igual que el dashboard ── */
+  .meal-slot { flex-direction: column; }
+  .meal-slot-content { padding: 0.55rem 0.85rem 0.8rem; }
+  .meal-slot .cm-day-avatar {
+    flex: 0 0 auto; width: 100%; height: 96px; border-radius: 0;
+  }
+  .meal-slot .cm-day-avatar::before {
+    left: 0; right: 0; top: 0; bottom: auto;
+    height: 48px; width: auto;
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,1) 0%,
+      rgba(255,255,255,0.96) 10%,
+      rgba(255,255,255,0.85) 28%,
+      rgba(255,255,255,0.55) 52%,
+      rgba(255,255,255,0) 100%
+    );
+  }
+  .dark .meal-slot .cm-day-avatar::before {
+    background: linear-gradient(to bottom,
+      rgba(36,30,24,1) 0%,
+      rgba(36,30,24,0.96) 10%,
+      rgba(36,30,24,0.85) 28%,
+      rgba(36,30,24,0.55) 52%,
+      rgba(36,30,24,0) 100%
+    );
+  }
 }
 
 .dash-progress-bar {

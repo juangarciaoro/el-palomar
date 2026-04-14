@@ -49,6 +49,8 @@ function initRecetas() {
       renderRecetas();
       // If dashboard is visible, refresh it so avatars can pick up newly-loaded photos
       try { if (typeof renderDashboard === 'function' && currentView === 'dashboard') renderDashboard(); } catch (e) { /* silent */ }
+      // Refresh comidas avatars whenever recipe photos are (re)loaded
+      try { if (typeof applyComidasAvatars === 'function') applyComidasAvatars(); } catch (e) { /* silent */ }
     }, err => console.warn('recetas listener:', err));
   if (window.unsubscribers) unsubscribers.push(unsub);
 }

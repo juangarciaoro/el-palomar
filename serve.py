@@ -18,7 +18,11 @@ def subir_productos_temporada():
         from google.oauth2 import service_account
 
     cred_path = os.path.join(os.path.dirname(__file__), 'el-palomar-abed2-firebase-adminsdk-fbsvc-f2ea8d5793.json')
-    data_path = os.path.join(os.path.dirname(__file__), 'nuevaVista', 'temporada_espana.json')
+    # Buscar el JSON de datos de temporada en la raíz del proyecto
+    data_path = os.path.join(os.path.dirname(__file__), 'temporada_espana.json')
+    if not os.path.exists(data_path):
+        print('No se encontró temporada_espana.json en', data_path, '- omitiendo subida de productos de temporada.')
+        return
     credentials = service_account.Credentials.from_service_account_file(cred_path)
     db = firestore.Client(credentials=credentials, project=credentials.project_id)
     col_ref = db.collection('productos-temporada')
