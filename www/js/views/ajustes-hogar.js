@@ -184,15 +184,11 @@ window.generarInvitacion = async function() {
       expiresAt: firebase.firestore.Timestamp.fromDate(expiresAt),
       used: false
     };
-    // Escribir en subcollección del hogar (para mostrar en la UI de ajustes)
-    // y en el índice raíz (para que el invitado pueda hacer lookup por token)
-    const batch = db.batch();
-    batch.set(
-      db.collection('hogares').doc(window.activeHogarId).collection('invitaciones').doc(token),
-      invData
-    );
-    batch.set(db.collection('invitaciones').doc(token), invData);
-    await batch.commit();
+    // Escritura principal en la subcollección del hogar
+    await db.collection('hogares').doc(window.activeHogarId)
+      .collection('invitaciones').doc(token).set(invData);
+    // Índice raíz best-effort (requiere rules actualizadas en Firebase Console)
+    db.collection('invitaciones').doc(token).set(invData).catch(() => {});
 
     const url = `${location.origin}${location.pathname}?invite=${token}`;
     await copiarEnlace(url);
@@ -220,15 +216,15 @@ window.revocarInvitacion = async function(tokenId) {
     confirmText: 'Revocar',
     onConfirm: async () => {
       try {
-        const batch = db.batch();
-        batch.delete(
-          db.collection('hogares').doc(window.activeHogarId).collection('invitaciones').doc(tokenId)
-        );
-        batch.delete(db.collection('invitaciones').doc(tokenId));
-        await batch.commit();
+        // Borrar de la subcollección del hogar (operación principal)
+        await db.collection('hogares').doc(window.activeHogarId)
+          .collection('invitaciones').doc(tokenId).delete();
+        // Borrar del índice raíz (best-effort: falla silenciosamente si las rules aún no están actualizadas)
+        db.collection('invitaciones').doc(tokenId).delete().catch(() => {});
         showToast('Invitación revocada');
         await renderAjustesHogar();
       } catch(e) {
+        console.error('revocarInvitacion:', e);
         showToast('Error al revocar');
       }
     }

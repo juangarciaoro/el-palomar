@@ -5,6 +5,7 @@
 let firebaseUser      = null;
 let userProfile       = null; // { displayName, email, photoURL, paletteIndex, createdAt }
 let onboardPaletteIdx = 0;
+let _loadingOnboard   = false; // guard contra doble ejecución de loadOrOnboard
 
 // ─── PENDING INVITE (capturado antes de cualquier redirect) ──
 const _pendingInviteToken = (function() {
@@ -47,6 +48,8 @@ initAuth();
 
 // ─── LOAD PROFILE OR ONBOARDING ───────────────────────────
 async function loadOrOnboard(user) {
+  if (_loadingOnboard) return;
+  _loadingOnboard = true;
   try {
     const snap = await db.collection('users').doc(user.uid).get();
     if (snap.exists) {
@@ -75,6 +78,8 @@ async function loadOrOnboard(user) {
     showToast('Error al cargar el perfil');
     hideLoading();
     showLoginScreen();
+  } finally {
+    _loadingOnboard = false;
   }
 }
 
@@ -154,11 +159,15 @@ window.loginWithGoogle = async function() {
         localStorage.setItem('gcal_token',     token);
         localStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
       }
-      // signInWithCredential dispara onAuthStateChanged → showApp() → calInit()
+      // signInWithCredential dispara onAuthStateChanged → loadOrOnboard() → showApp()
       const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
       await firebase.auth().signInWithCredential(credential);
-      // Si el usuario ya tenía sesión activa, onAuthStateChanged no vuelve a disparar
-      // así que llamamos calInit explícitamente
+      // Si el usuario ya tenía sesión activa, onAuthStateChanged no vuelve a disparar.
+      // En ese caso llamamos loadOrOnboard manualmente (el guard evita doble ejecución).
+      if (firebase.auth().currentUser && !userProfile) {
+        firebaseUser = firebase.auth().currentUser;
+        await loadOrOnboard(firebaseUser);
+      }
       if (window.calInit) await window.calInit();
     } catch (err) {
       hideLoading();
@@ -206,6 +215,7 @@ window.logout = async function() {
 
 // ─── ONBOARDING ──────────────────────────────────────────
 function showOnboarding(user) {
+  hideLoading();
   const firstName = (user.displayName || '').split(' ')[0];
   document.getElementById('onboard-name').value = firstName;
   const img = document.getElementById('onboard-avatar');
