@@ -187,10 +187,11 @@ window.generarInvitacion = async function() {
     // Escritura principal en la subcollección del hogar
     await db.collection('hogares').doc(window.activeHogarId)
       .collection('invitaciones').doc(token).set(invData);
-    // Índice raíz best-effort (requiere rules actualizadas en Firebase Console)
+    // Índice raíz best-effort (para lookup sin conocer hogarId)
     db.collection('invitaciones').doc(token).set(invData).catch(() => {});
 
-    const url = `${location.origin}${location.pathname}?invite=${token}`;
+    // hogarId en la URL → acceptInvite puede leer la subcollección directamente
+    const url = `${location.origin}${location.pathname}?invite=${token}&hogar=${window.activeHogarId}`;
     await copiarEnlace(url);
     showToast('Enlace copiado al portapapeles (válido 48h)');
     await renderAjustesHogar();

@@ -9,9 +9,14 @@ let _loadingOnboard   = false; // guard contra doble ejecución de loadOrOnboard
 
 // ─── PENDING INVITE (capturado antes de cualquier redirect) ──
 const _pendingInviteToken = (function() {
-  const p = new URLSearchParams(location.search).get('invite');
+  const params = new URLSearchParams(location.search);
+  const p = params.get('invite');
   if (p) history.replaceState({}, '', location.pathname); // limpiar URL
   return p || null;
+})();
+const _pendingInviteHogarId = (function() {
+  const params = new URLSearchParams(location.search);
+  return params.get('hogar') || null;
 })();
 
 // ─── LOADING SCREEN ─────────────────────────────────────────
@@ -59,7 +64,7 @@ async function loadOrOnboard(user) {
 
       // Procesar invitación pendiente antes de cargar el hogar habitual
       if (_pendingInviteToken) {
-        const joined = await acceptInvite(_pendingInviteToken, user.uid);
+        const joined = await acceptInvite(_pendingInviteToken, user.uid, _pendingInviteHogarId);
         if (joined) { showApp(); return; }
       }
 
@@ -84,14 +89,32 @@ async function loadOrOnboard(user) {
 }
 
 // ─── ACCEPT INVITE ────────────────────────────────────────
-async function acceptInvite(token, uid) {
+// hogarIdHint: hogarId de la URL (?hogar=...), evita depender del índice raíz
+async function acceptInvite(token, uid, hogarIdHint) {
   try {
-    const indexSnap = await db.collection('invitaciones').doc(token).get();
-    if (!indexSnap.exists) {
+    let inv = null;
+    let hogarId = hogarIdHint || null;
+
+    // 1. Intentar leer desde la subcollección del hogar (fuente primaria si tenemos hogarId)
+    if (hogarId) {
+      const subSnap = await db.collection('hogares').doc(hogarId)
+        .collection('invitaciones').doc(token).get();
+      if (subSnap.exists) inv = subSnap.data();
+    }
+
+    // 2. Fallback: índice raíz (si el hogarId no venía en la URL o no se encontró)
+    if (!inv) {
+      const rootSnap = await db.collection('invitaciones').doc(token).get().catch(() => null);
+      if (rootSnap && rootSnap.exists) {
+        inv = rootSnap.data();
+        hogarId = inv.hogarId;
+      }
+    }
+
+    if (!inv || !hogarId) {
       showToast('Invitación no válida o no encontrada');
       return false;
     }
-    const inv = indexSnap.data();
     if (inv.used) {
       showToast('Esta invitación ya fue utilizada');
       return false;
@@ -101,14 +124,12 @@ async function acceptInvite(token, uid) {
       return false;
     }
 
-    const hogarId = inv.hogarId;
     const now = firebase.firestore.FieldValue.serverTimestamp();
 
     // Verificar si ya es miembro
     const memberSnap = await db.collection('hogares').doc(hogarId)
       .collection('members').doc(uid).get();
     if (memberSnap.exists) {
-      // Ya es miembro — solo aseguramos que el hogar quede activo
       await db.collection('users').doc(uid).update({ activeHogarId: hogarId });
       const hogarSnap = await db.collection('hogares').doc(hogarId).get();
       window.activeHogar   = { id: hogarId, ...hogarSnap.data() };
@@ -117,19 +138,22 @@ async function acceptInvite(token, uid) {
       return true;
     }
 
-    // Añadir como miembro + marcar invite usada (batch atómico)
+    // Añadir como miembro + marcar invite usada
     const batch = db.batch();
     batch.set(
       db.collection('hogares').doc(hogarId).collection('members').doc(uid),
       { role: 'member', joinedAt: now }
     );
-    batch.update(db.collection('invitaciones').doc(token),
-      { used: true, usedBy: uid, usedAt: now });
     batch.update(
       db.collection('hogares').doc(hogarId).collection('invitaciones').doc(token),
-      { used: true, usedBy: uid, usedAt: now });
+      { used: true, usedBy: uid, usedAt: now }
+    );
     batch.update(db.collection('users').doc(uid), { activeHogarId: hogarId });
     await batch.commit();
+
+    // Marcar índice raíz best-effort
+    db.collection('invitaciones').doc(token)
+      .update({ used: true, usedBy: uid, usedAt: now }).catch(() => {});
 
     const hogarSnap = await db.collection('hogares').doc(hogarId).get();
     window.activeHogar   = { id: hogarId, ...hogarSnap.data() };
@@ -269,7 +293,7 @@ window.saveOnboarding = async function() {
 
   // Si venía con invite, procesar antes de intentar hogar propio
   if (_pendingInviteToken) {
-    const joined = await acceptInvite(_pendingInviteToken, firebaseUser.uid);
+    const joined = await acceptInvite(_pendingInviteToken, firebaseUser.uid, _pendingInviteHogarId);
     if (joined) { showApp(); return; }
   }
 
