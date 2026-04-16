@@ -75,12 +75,16 @@ service cloud.firestore {
                     || (request.auth != null && request.auth.uid == memberId);
 
         // Admins pueden añadir/cambiar roles; un usuario puede auto-unirse con
-        // role=member para aceptar una invitación (el token se valida en el cliente,
-        // el hogarId es el "capability token" — UUID no adivinable)
+        // role=member para aceptar una invitación; el owner puede añadirse como admin
+        // al crear el hogar (justo después de que exista el doc del hogar)
         allow create: if isAdmin(hogarId)
                       || (request.auth != null
                           && request.auth.uid == memberId
-                          && request.resource.data.role == 'member');
+                          && request.resource.data.role == 'member')
+                      || (request.auth != null
+                          && request.auth.uid == memberId
+                          && request.resource.data.role == 'admin'
+                          && get(/databases/$(database)/documents/hogares/$(hogarId)).data.ownerId == request.auth.uid);
 
         // Solo admins pueden cambiar roles
         allow update: if isAdmin(hogarId);

@@ -221,7 +221,12 @@ window.logout = async function() {
   currentUser  = null;
   firebaseUser = null;
   userProfile  = null;
+  _loadingOnboard = false;
+  // Ocultar pantalla "sin hogar" si estaba visible
+  const noHogar = document.getElementById('no-hogar-screen');
+  if (noHogar) noHogar.style.display = 'none';
   try { await firebase.auth().signOut(); } catch(e) {}
+  showLoginScreen();
 };
 
 // ─── ONBOARDING ──────────────────────────────────────────

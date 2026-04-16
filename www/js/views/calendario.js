@@ -36,6 +36,11 @@ const _origSwitchView = window.switchView;
 window.switchView = function(view) {
   _origSwitchView(view);
   if (view === 'calendario') {
+    const hasCalendar = window.activeHogar && window.activeHogar.calendarId;
+    if (!hasCalendar) {
+      showCalNoConfig();
+      return;
+    }
     if (gcalToken && Date.now() < gcalTokenExp) {
       showCalMain();
     } else if (gcalToken) {
@@ -53,6 +58,24 @@ window.switchView = function(view) {
     }
   }
 };
+
+function showCalNoConfig() {
+  const loginState = document.getElementById('cal-login-state');
+  const mainState  = document.getElementById('cal-main-state');
+  if (loginState) loginState.innerHTML = `
+    <div class="card" style="padding:1.5rem;text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:0.75rem">&#128197;</div>
+      <div style="font-weight:600;margin-bottom:0.4rem">Calendario no configurado</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.5">
+        Un administrador del hogar debe configurar el ID de Google Calendar en los Ajustes del hogar.
+      </div>
+      <button class="btn-secondary" style="width:100%;padding:0.85rem" onclick="closeUserDrawer(); showAjustesHogarView(); switchView('ajustes-hogar')">
+        Ir a Ajustes del hogar
+      </button>
+    </div>`;
+  if (loginState) loginState.style.display = 'block';
+  if (mainState)  mainState.style.display  = 'none';
+}
 
 // --- REFRESCO DE TOKEN (usa Firebase Auth) ------------------
 window.calLogin = async function() {
@@ -116,6 +139,8 @@ window.calLogout = function() {
 
 // Llamar desde showApp() tras el login
 window.calInit = async function() {
+  // No inicializar si el hogar no tiene calendarId
+  if (!window.activeHogar || !window.activeHogar.calendarId) return;
   const t = localStorage.getItem('gcal_token');
   const e = parseInt(localStorage.getItem('gcal_token_exp') || '0');
   if (t && Date.now() < e) {
@@ -138,12 +163,13 @@ async function showCalMain() {
 async function fetchCalEvents() {
   if (!gcalToken) return;
 
-  // Usar el calendarId del hogar activo; si no tiene, usar el de config.js como fallback
+  // Usar solo el calendarId del hogar activo — sin fallback a otras cuentas
   const calId = (window.activeHogar && window.activeHogar.calendarId)
     ? window.activeHogar.calendarId
-    : GOOGLE_CALENDAR_ID;
+    : null;
   if (!calId) {
-    document.getElementById('cal-sync-text').textContent = 'Sin calendario configurado';
+    const syncText = document.getElementById('cal-sync-text');
+    if (syncText) syncText.textContent = 'Sin calendario configurado';
     return;
   }
 
@@ -304,10 +330,14 @@ window.saveCalEvent = async function() {
   }
   if (location) body.location = location;
 
+  const createCalId = (window.activeHogar && window.activeHogar.calendarId)
+    ? window.activeHogar.calendarId : null;
+  if (!createCalId) { showToast('Este hogar no tiene un calendario configurado'); return; }
+
   document.getElementById('cal-sync-text').textContent = 'Creando evento...';
   try {
     const res = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(GOOGLE_CALENDAR_ID)}/events`,
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(createCalId)}/events`,
       {
         method: 'POST',
         headers: {
