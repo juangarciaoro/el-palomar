@@ -257,26 +257,25 @@ async function renderMisHogares() {
   if (!container || !firebaseUser) return;
 
   try {
-    // Buscar en qué hogares es miembro el usuario actual
-    const snap = await db.collectionGroup('members').where(
-      firebase.firestore.FieldPath.documentId()
-        ? '__name__' : '__name__', '>=', ''
-    ).get().catch(() => null);
+    // Leer los hogarIds guardados en el perfil del usuario
+    const userSnap = await db.collection('users').doc(firebaseUser.uid).get();
+    const userData = userSnap.data() || {};
+    let hogarIds = userData.hogarIds || [];
 
-    // Alternativa: consulta directa porque collectionGroup puede requerir índice
-    // Leemos los hogares desde el campo activeHogarId y cualquier hogarId en el perfil
-    // Por simplicidad, listamos todos los hogares donde memberId == uid
-    const hogaresSnap = await db.collection('hogares').get();
-    const misHogares = [];
-    for (const doc of hogaresSnap.docs) {
-      try {
-        const mSnap = await db.collection('hogares').doc(doc.id)
-          .collection('members').doc(firebaseUser.uid).get();
-        if (mSnap.exists) misHogares.push({ id: doc.id, ...doc.data() });
-      } catch(e) { /* sin acceso = no miembro */ }
+    // Asegurar que el hogar activo siempre está incluido
+    if (window.activeHogarId && !hogarIds.includes(window.activeHogarId)) {
+      hogarIds = [...hogarIds, window.activeHogarId];
     }
 
-    if (misHogares.length <= 1) return; // no mostrar si solo hay un hogar
+    if (hogarIds.length <= 1) return; // no mostrar si solo hay un hogar
+
+    // Cargar datos de cada hogar en paralelo
+    const results = await Promise.all(
+      hogarIds.map(id => db.collection('hogares').doc(id).get().catch(() => null))
+    );
+    const misHogares = results
+      .filter(s => s && s.exists)
+      .map(s => ({ id: s.id, ...s.data() }));
 
     container.innerHTML = `
       <div class="card" style="padding:1.25rem;margin-bottom:1rem">

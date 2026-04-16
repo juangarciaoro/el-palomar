@@ -135,7 +135,13 @@ async function acceptInvite(token, uid, hogarIdHint) {
       db.collection('hogares').doc(hogarId).collection('invitaciones').doc(token),
       { used: true, usedBy: uid, usedAt: now }
     );
-    batch.update(db.collection('users').doc(uid), { activeHogarId: hogarId });
+    // Incluir también el hogar previo en hogarIds (por si venía de migración sin el campo)
+    const prevHogarId = window.activeHogarId || null;
+    const hogarIdsToAdd = [hogarId, prevHogarId].filter(Boolean);
+    batch.update(db.collection('users').doc(uid), {
+      activeHogarId: hogarId,
+      hogarIds: firebase.firestore.FieldValue.arrayUnion(...hogarIdsToAdd)
+    });
     await batch.commit();
 
     // Marcar índice raíz best-effort
@@ -412,7 +418,10 @@ window.confirmarCrearHogar = async function() {
 
     await hogarRef.set({ nombre, ownerId: firebaseUser.uid, createdAt: now });
     await hogarRef.collection('members').doc(firebaseUser.uid).set({ role: 'admin', joinedAt: now });
-    await db.collection('users').doc(firebaseUser.uid).update({ activeHogarId: hogarId });
+    await db.collection('users').doc(firebaseUser.uid).update({
+      activeHogarId: hogarId,
+      hogarIds: firebase.firestore.FieldValue.arrayUnion(hogarId)
+    });
 
     window.activeHogar   = { id: hogarId, nombre, ownerId: firebaseUser.uid };
     window.activeHogarId = hogarId;
