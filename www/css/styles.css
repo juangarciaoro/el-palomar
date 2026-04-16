@@ -1436,6 +1436,30 @@ ul { list-style: none; }
   overflow-y: auto;
 }
 .modal-overlay.open .modal-sheet { transform: translateY(0); }
+
+/* Receta edit/detail modals: fixed buttons at the bottom */
+#modal-receta .modal-sheet,
+#modal-receta-detail .modal-sheet {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+  padding-bottom: 0;
+}
+.receta-modal-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
+}
+#modal-receta .modal-actions,
+#modal-receta-detail .modal-actions {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 0.75rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+}
+
 .modal-handle {
   width: 36px; height: 4px;
   background: var(--border);
@@ -1926,7 +1950,7 @@ ul { list-style: none; }
   .cm-day-avatar { flex: 0 0 110px; }
   .cm-day-avatar::before {
     content: ''; position: absolute;
-    left: 0; top: 0; bottom: 0; width: 56px;
+    left: 0; top: 0; bottom: 0; width: 56px; height: auto;
     pointer-events: none; z-index: 2;
     background: linear-gradient(to right,
       rgba(255,255,255,1) 0%,

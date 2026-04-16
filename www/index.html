@@ -475,6 +475,7 @@
   <div class="modal-overlay" id="modal-receta" onclick="closeModal('modal-receta', event)">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
+      <div class="receta-modal-scroll">
       <div class="modal-title" id="receta-modal-title">Nueva receta</div>
       <div class="form-field">
         <label class="form-label">Nombre</label>
@@ -523,6 +524,7 @@
         </div>
         <div class="receta-ing-list" id="receta-ing-list"></div>
       </div>
+      </div><!-- /receta-modal-scroll -->
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeModal('modal-receta')">Cancelar</button>
         <button class="btn-primary" id="save-receta-btn" onclick="saveReceta()">Guardar</button>
@@ -534,6 +536,7 @@
   <div class="modal-overlay" id="modal-receta-detail" onclick="closeModal('modal-receta-detail', event)">
     <div class="modal-sheet">
       <div class="modal-handle"></div>
+      <div class="receta-modal-scroll">
       <img id="detail-receta-photo" alt="" style="display:none">
       <input type="hidden" id="detail-receta-id">
       <div class="modal-title" id="detail-receta-name"></div>
@@ -543,7 +546,8 @@
       </div>
       <div class="form-label" style="margin-bottom:0.5rem">Ingredientes</div>
       <div id="detail-receta-ingredients"></div>
-      <div class="modal-actions" style="margin-top:1.25rem">
+      </div><!-- /receta-modal-scroll -->
+      <div class="modal-actions">
         <button class="btn-secondary" style="flex:1" onclick="closeModal('modal-receta-detail')">Cerrar</button>
         <button class="btn-primary" style="flex:1" onclick="openEditReceta(document.getElementById('detail-receta-id').value)">Editar</button>
       </div>
