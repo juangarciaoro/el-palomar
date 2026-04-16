@@ -37,14 +37,14 @@ window.populateCatSelects = function() {
 
 function initCategorias() {
   if (!db) return;
-  const unsub = db.collection('categorias')
+  const unsub = hogarCol('categorias')
     .orderBy('name', 'asc')
     .onSnapshot(async snap => {
       if (snap.empty) {
         // Sembrar categorías por defecto la primera vez
         const batch = db.batch();
         DEFAULT_CATS.forEach((c, i) => {
-          const ref = db.collection('categorias').doc();
+          const ref = hogarCol('categorias').doc();
           batch.set(ref, {
             emoji: c.emoji,
             name: c.name,
@@ -132,10 +132,10 @@ window.saveCategoria = async function() {
   if (!name)  { showToast('El nombre es obligatorio'); return; }
   try {
     if (_catEditId) {
-      await db.collection('categorias').doc(_catEditId).update({ emoji, name });
+      await hogarCol('categorias').doc(_catEditId).update({ emoji, name });
       showToast('Categoría actualizada');
     } else {
-      await db.collection('categorias').add({
+      await hogarCol('categorias').add({
         emoji,
         name,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -156,7 +156,7 @@ window.deleteCategoria = function(id, name) {
     confirmText: 'Eliminar',
     onConfirm: async () => {
       try {
-        await db.collection('categorias').doc(id).delete();
+        await hogarCol('categorias').doc(id).delete();
         showToast(`Categoría "${name}" eliminada`);
       } catch(e) {
         console.error('deleteCategoria:', e);

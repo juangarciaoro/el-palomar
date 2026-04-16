@@ -6,6 +6,13 @@ let firebaseUser      = null;
 let userProfile       = null; // { displayName, email, photoURL, paletteIndex, createdAt }
 let onboardPaletteIdx = 0;
 
+// ─── PENDING INVITE (capturado antes de cualquier redirect) ──
+const _pendingInviteToken = (function() {
+  const p = new URLSearchParams(location.search).get('invite');
+  if (p) history.replaceState({}, '', location.pathname); // limpiar URL
+  return p || null;
+})();
+
 // ─── LOADING SCREEN ─────────────────────────────────────────
 function showLoading() {
   const el = document.getElementById('loading-screen');
@@ -46,6 +53,19 @@ async function loadOrOnboard(user) {
       userProfile = snap.data();
       currentUser = userProfile.displayName;
       applyPalette(userProfile.paletteIndex || 0);
+
+      // Procesar invitación pendiente antes de cargar el hogar habitual
+      if (_pendingInviteToken) {
+        const joined = await acceptInvite(_pendingInviteToken, user.uid);
+        if (joined) { showApp(); return; }
+      }
+
+      const hogar = await window.getActiveHogar(user.uid);
+      if (!hogar) {
+        hideLoading();
+        showNoHogarScreen();
+        return;
+      }
       showApp();
     } else {
       showOnboarding(user);
@@ -55,6 +75,66 @@ async function loadOrOnboard(user) {
     showToast('Error al cargar el perfil');
     hideLoading();
     showLoginScreen();
+  }
+}
+
+// ─── ACCEPT INVITE ────────────────────────────────────────
+async function acceptInvite(token, uid) {
+  try {
+    const indexSnap = await db.collection('invitaciones').doc(token).get();
+    if (!indexSnap.exists) {
+      showToast('Invitación no válida o no encontrada');
+      return false;
+    }
+    const inv = indexSnap.data();
+    if (inv.used) {
+      showToast('Esta invitación ya fue utilizada');
+      return false;
+    }
+    if (inv.expiresAt && inv.expiresAt.toDate() < new Date()) {
+      showToast('La invitación ha caducado');
+      return false;
+    }
+
+    const hogarId = inv.hogarId;
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+
+    // Verificar si ya es miembro
+    const memberSnap = await db.collection('hogares').doc(hogarId)
+      .collection('members').doc(uid).get();
+    if (memberSnap.exists) {
+      // Ya es miembro — solo aseguramos que el hogar quede activo
+      await db.collection('users').doc(uid).update({ activeHogarId: hogarId });
+      const hogarSnap = await db.collection('hogares').doc(hogarId).get();
+      window.activeHogar   = { id: hogarId, ...hogarSnap.data() };
+      window.activeHogarId = hogarId;
+      showToast(`Ya perteneces a "${window.activeHogar.nombre}"`);
+      return true;
+    }
+
+    // Añadir como miembro + marcar invite usada (batch atómico)
+    const batch = db.batch();
+    batch.set(
+      db.collection('hogares').doc(hogarId).collection('members').doc(uid),
+      { role: 'member', joinedAt: now }
+    );
+    batch.update(db.collection('invitaciones').doc(token),
+      { used: true, usedBy: uid, usedAt: now });
+    batch.update(
+      db.collection('hogares').doc(hogarId).collection('invitaciones').doc(token),
+      { used: true, usedBy: uid, usedAt: now });
+    batch.update(db.collection('users').doc(uid), { activeHogarId: hogarId });
+    await batch.commit();
+
+    const hogarSnap = await db.collection('hogares').doc(hogarId).get();
+    window.activeHogar   = { id: hogarId, ...hogarSnap.data() };
+    window.activeHogarId = hogarId;
+    showToast(`¡Bienvenido/a a "${window.activeHogar.nombre}"!`);
+    return true;
+  } catch(e) {
+    console.error('acceptInvite:', e);
+    showToast('Error al procesar la invitación');
+    return false;
   }
 }
 
@@ -176,6 +256,18 @@ window.saveOnboarding = async function() {
   currentUser = name;
   applyPalette(onboardPaletteIdx);
   closeModal('modal-onboarding');
+
+  // Si venía con invite, procesar antes de intentar hogar propio
+  if (_pendingInviteToken) {
+    const joined = await acceptInvite(_pendingInviteToken, firebaseUser.uid);
+    if (joined) { showApp(); return; }
+  }
+
+  const hogar = await window.getActiveHogar(firebaseUser.uid);
+  if (!hogar) {
+    showNoHogarScreen();
+    return;
+  }
   showApp();
 };
 
@@ -187,6 +279,11 @@ function showApp() {
   document.getElementById('bottom-nav').classList.add('visible');
   document.getElementById('main-content').style.display = '';
   document.getElementById('topbar-user').textContent = currentUser;
+
+  // Nombre dinámico del hogar en toda la UI
+  if (window.activeHogar && window.activeHogar.nombre) {
+    updateHogarName(window.activeHogar.nombre);
+  }
   const navUN = document.getElementById('nav-user-name');
   const navUA = document.getElementById('nav-user-avatar');
   if (navUN) navUN.textContent = currentUser;
@@ -243,3 +340,69 @@ function showLoginScreen() {
   document.getElementById('bottom-nav').classList.remove('visible');
   document.getElementById('main-content').style.display = 'none';
 }
+
+// ─── NO HOGAR ─────────────────────────────────────────────
+function showNoHogarScreen() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('topbar').classList.remove('visible');
+  document.getElementById('bottom-nav').classList.remove('visible');
+  document.getElementById('main-content').style.display = 'none';
+  let el = document.getElementById('no-hogar-screen');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'no-hogar-screen';
+    el.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;background:var(--bg,#f5f5f5);z-index:100';
+    el.innerHTML = '<div style="font-size:3rem;margin-bottom:1rem">🏠</div>'
+      + '<h2 style="margin:0 0 0.5rem;color:var(--text)">Sin hogar asignado</h2>'
+      + '<p style="color:var(--text-muted);max-width:28rem;margin:0 0 1.5rem">Todavía no perteneces a ningún hogar. Crea uno nuevo o pide a alguien que te invite.</p>'
+      + '<button class="btn btn-primary" onclick="showCreateHogarFlow()">Crear un hogar</button>'
+      + '<button class="btn" style="margin-top:0.75rem" onclick="logout()">Cerrar sesión</button>';
+    document.body.appendChild(el);
+  } else {
+    el.style.display = 'flex';
+  }
+}
+
+window.showCreateHogarFlow = function() {
+  const input = document.getElementById('crear-hogar-nombre');
+  if (input) input.value = '';
+  openModal('modal-crear-hogar');
+  setTimeout(() => { if (input) input.focus(); }, 300);
+};
+
+window.confirmarCrearHogar = async function() {
+  const input = document.getElementById('crear-hogar-nombre');
+  const nombre = input ? input.value.trim() : '';
+  if (!nombre) { showToast('Pon un nombre al hogar'); return; }
+  if (!firebaseUser) return;
+
+  const btn = document.querySelector('#modal-crear-hogar .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Creando…'; }
+
+  try {
+    const hogarRef = db.collection('hogares').doc();
+    const hogarId  = hogarRef.id;
+    const now      = firebase.firestore.FieldValue.serverTimestamp();
+
+    await hogarRef.set({ nombre, ownerId: firebaseUser.uid, createdAt: now });
+    await hogarRef.collection('members').doc(firebaseUser.uid).set({ role: 'admin', joinedAt: now });
+    await db.collection('users').doc(firebaseUser.uid).update({ activeHogarId: hogarId });
+
+    window.activeHogar   = { id: hogarId, nombre, ownerId: firebaseUser.uid };
+    window.activeHogarId = hogarId;
+
+    closeModal('modal-crear-hogar');
+
+    // Ocultar pantalla de "sin hogar" si estaba visible
+    const noHogar = document.getElementById('no-hogar-screen');
+    if (noHogar) noHogar.style.display = 'none';
+
+    updateHogarName(nombre);
+    showApp();
+    showToast(`Hogar "${nombre}" creado`);
+  } catch(err) {
+    console.error('confirmarCrearHogar:', err);
+    showToast('Error al crear el hogar');
+    if (btn) { btn.disabled = false; btn.textContent = 'Crear hogar →'; }
+  }
+};

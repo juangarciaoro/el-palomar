@@ -200,7 +200,7 @@ window.saveMeal = async function() {
   const val   = document.getElementById('comida-input').value.trim();
   const notes = document.getElementById('comida-notes').value.trim();
   if (CONFIGURED && db) {
-    await db.collection('comidas').doc(date).set({
+    await hogarCol('comidas').doc(date).set({
       [slot]: val,
       [slot+'Notes']: notes,
       updatedBy: currentUser,
@@ -387,7 +387,7 @@ window.addIngredientToCompra = async function (name, cat, idx) {
   if (existing) {
     const newUnits = (existing.units || 1) + 1;
     if (CONFIGURED && db) {
-      await db.collection('compra').doc(existing.id).update({ units: newUnits });
+      await hogarCol('compra').doc(existing.id).update({ units: newUnits });
     } else {
       existing.units = newUnits;
       renderCompra && renderCompra();
@@ -408,7 +408,7 @@ window.addIngredientToCompra = async function (name, cat, idx) {
   };
   if (CONFIGURED && db) {
     const id = 'item_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-    await db.collection('compra').doc(id).set(item);
+    await hogarCol('compra').doc(id).set(item);
   } else {
     item.id = 'l' + Date.now();
     compraItems.push(item);

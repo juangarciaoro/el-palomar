@@ -213,7 +213,7 @@ window.saveItem = async function() {
   if (existing) {
     const newUnits = (existing.units || 1) + units;
     if (CONFIGURED && db) {
-      await db.collection('compra').doc(existing.id).update({ units: newUnits });
+      await hogarCol('compra').doc(existing.id).update({ units: newUnits });
     } else {
       existing.units = newUnits;
       renderCompra();
@@ -237,7 +237,7 @@ window.saveItem = async function() {
   };
   if (CONFIGURED && db) {
     const id = `item_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-    await db.collection('compra').doc(id).set(item);
+    await hogarCol('compra').doc(id).set(item);
   } else {
     item.id = 'l' + Date.now();
     compraItems.push(item);
@@ -259,7 +259,7 @@ window.toggleItem = async function(id) {
   if (navigator.vibrate) navigator.vibrate(30);
   const newVal = !item.checked;
   if (CONFIGURED && db) {
-    await db.collection('compra').doc(id).update({ checked: newVal });
+    await hogarCol('compra').doc(id).update({ checked: newVal });
   } else {
     item.checked = newVal;
     renderCompra();
@@ -268,7 +268,7 @@ window.toggleItem = async function(id) {
 
 window.deleteItem = async function(id) {
   if (CONFIGURED && db) {
-    await db.collection('compra').doc(id).delete();
+    await hogarCol('compra').doc(id).delete();
   } else {
     compraItems = compraItems.filter(i => i.id !== id);
     renderCompra();
@@ -280,7 +280,7 @@ window.changeUnits = async function(id, delta) {
   if (!item) return;
   const newUnits = Math.max(1, (item.units || 1) + delta);
   if (CONFIGURED && db) {
-    await db.collection('compra').doc(id).update({ units: newUnits });
+    await hogarCol('compra').doc(id).update({ units: newUnits });
   } else {
     item.units = newUnits;
     renderCompra();
@@ -296,7 +296,7 @@ window.clearChecked = function() {
     confirmText: 'Limpiar',
     onConfirm: async () => {
       if (CONFIGURED && db) {
-        await Promise.all(checked.map(i => db.collection('compra').doc(i.id).delete()));
+        await Promise.all(checked.map(i => hogarCol('compra').doc(i.id).delete()));
       } else {
         compraItems = compraItems.filter(i => !i.checked);
         renderCompra();

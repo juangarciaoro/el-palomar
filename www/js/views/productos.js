@@ -10,7 +10,7 @@ let productosSearchQ = '';
 
 function initProductos() {
   if (!db) return;
-  const unsub = db.collection('productos')
+  const unsub = hogarCol('productos')
     .orderBy('name', 'asc')
     .onSnapshot(snap => {
       window.masterIngredients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -29,7 +29,7 @@ window.upsertProducto = async function(name, cat) {
   // Usar doc ID determinístico para evitar duplicados en Firestore
   const docId = key.replace(/\//g, '_').replace(/\./g, '_').slice(0, 100);
   try {
-    await db.collection('productos').doc(docId).set(
+    await hogarCol('productos').doc(docId).set(
       { name: nameTrim, cat: cat || '🧾 Varios', createdAt: firebase.firestore.FieldValue.serverTimestamp() },
       { merge: true }
     );
@@ -100,9 +100,9 @@ window.updateProductoCat = async function(id, newCat) {
   if (!producto) return;
   try {
     // Actualizar en catálogo
-    await db.collection('productos').doc(id).update({ cat: newCat });
+    await hogarCol('productos').doc(id).update({ cat: newCat });
     // Actualizar items de compra que coincidan por nombre
-    const snap = await db.collection('compra')
+    const snap = await hogarCol('compra')
       .where('cat', '==', producto.cat || '🧾 Varios')
       .get();
     const batch = db.batch();
@@ -125,7 +125,7 @@ window.deleteProducto = function(id, name) {
     confirmText: 'Eliminar',
     onConfirm: async () => {
       try {
-        await db.collection('productos').doc(id).delete();
+        await hogarCol('productos').doc(id).delete();
         showToast(`"${name}" eliminado del catálogo`);
       } catch(e) {
         console.error('deleteProducto:', e);

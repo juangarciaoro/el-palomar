@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    // El usuario autenticado es miembro del hogar
+    function isMember(hogarId) {
+      return request.auth != null
+          && exists(/databases/$(database)/documents/hogares/$(hogarId)/members/$(request.auth.uid));
+    }
+
+    // El usuario autenticado es admin del hogar
+    function isAdmin(hogarId) {
+      return request.auth != null
+          && get(/databases/$(database)/documents/hogares/$(hogarId)/members/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── Colección users (permanece en raíz) ──────────────────────────────────
+    // Cualquier usuario autenticado puede leer perfiles (nombre, foto) para
+    // poblar selectores de asignación de tareas y listas de miembros.
+    // Solo el propio usuario puede escribir su perfil.
+    match /users/{uid} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // ─── Colección global: productos-temporada ────────────────────────────────
+    // Catálogo de referencia compartido entre todos los hogares. Solo lectura
+    // desde el cliente; escritura reservada al Admin SDK (scripts).
+    match /productos-temporada/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if false;
+    }
+
+    // ─── Índice global de invitaciones ────────────────────────────────────────
+    // Permite a un invitado hacer lookup por token sin conocer el hogarId.
+    // La escritura (crear/borrar) solo la pueden hacer admins del hogar referenciado.
+    match /invitaciones/{tokenId} {
+      allow read: if request.auth != null;
+      allow create: if isAdmin(request.resource.data.hogarId);
+      allow delete: if isAdmin(resource.data.hogarId);
+      // Marcar como usada: cualquier usuario autenticado (lógica real en el cliente)
+      allow update: if request.auth != null
+                    && request.resource.data.used == true
+                    && resource.data.used == false;
+    }
+
+    // ─── Colección hogares ────────────────────────────────────────────────────
+    match /hogares/{hogarId} {
+
+      // Leer el documento del hogar: solo miembros
+      allow read:   if isMember(hogarId);
+
+      // Crear un nuevo hogar: cualquier usuario autenticado puede crear el suyo
+      // (se convierte en admin en el mismo batch, vía Cloud Function o script)
+      allow create: if request.auth != null
+                    && request.resource.data.ownerId == request.auth.uid;
+
+      // Editar metadatos del hogar (nombre, calendarId): solo admins
+      allow update: if isAdmin(hogarId);
+
+      // Borrar el hogar: solo el owner
+      allow delete: if request.auth != null
+                    && resource.data.ownerId == request.auth.uid;
+
+      // ── Subcolección members ─────────────────────────────────────────────
+      match /members/{memberId} {
+
+        // Cualquier miembro puede ver la lista de miembros
+        allow read: if isMember(hogarId);
+
+        // Admins pueden añadir/cambiar roles; un usuario puede auto-unirse con
+        // role=member para aceptar una invitación (el token se valida en el cliente,
+        // el hogarId es el "capability token" — UUID no adivinable)
+        allow create: if isAdmin(hogarId)
+                      || (request.auth != null
+                          && request.auth.uid == memberId
+                          && request.resource.data.role == 'member');
+
+        // Solo admins pueden cambiar roles
+        allow update: if isAdmin(hogarId);
+
+        // Un admin puede expulsar a cualquier miembro;
+        // un miembro puede abandonar el hogar eliminando su propia entrada
+        allow delete: if isAdmin(hogarId)
+                      || (request.auth != null && request.auth.uid == memberId);
+      }
+
+      // ── Subcolección invitaciones ────────────────────────────────────────
+      match /invitaciones/{tokenId} {
+
+        // Cualquier usuario autenticado puede leer un token para validarlo
+        // (necesario para que el invitado lo verifique antes de unirse)
+        allow read: if request.auth != null;
+
+        // Solo admins pueden crear o revocar invitaciones
+        allow create, delete: if isAdmin(hogarId);
+
+        // Marcar el token como usado: cualquier usuario autenticado puede hacerlo
+        // (el cliente lo hace al aceptar; la lógica de seguridad real va en Cloud Function)
+        allow update: if request.auth != null
+                      && request.resource.data.used == true
+                      && resource.data.used == false;
+      }
+
+      // ── Subcolecciones de datos del hogar ────────────────────────────────
+      // compra, comidas, tareas, recetas, productos, categorias, recordatorios
+      match /{collection}/{docId} {
+        allow read, write: if isMember(hogarId);
+      }
+    }
+  }
+}

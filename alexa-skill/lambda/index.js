@@ -123,6 +123,10 @@ async function fsDelete(col, id) {
 
 // --- Helpers ------------------------------------------------------------------
 function genId(p) { return p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2, 6); }
+
+// Ruta de subcolección dentro del hogar El Palomar (hardcoded — Alexa solo sirve este hogar)
+const EL_PALOMAR_HOGAR_ID = 'EKqhsEqx4UlHPVSOACLb';
+const HC = col => `hogares/${EL_PALOMAR_HOGAR_ID}/${col}`;
 function isMatch(a, b) {
   const n = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const la = n(a), lb = n(b);
@@ -153,12 +157,12 @@ const AddShoppingHandler = {
   async handle(h) {
     const name = h.requestEnvelope.request.intent.slots?.producto?.value;
     if (!name) return h.responseBuilder.speak('Que producto quieres añadir?').getResponse();
-    const [allCompra, allProductos] = await Promise.all([fsGetAll('compra'), fsGetAll('productos')]);
+    const [allCompra, allProductos] = await Promise.all([fsGetAll(HC('compra')), fsGetAll(HC('productos'))]);
     const existing = allCompra.filter(i => !i.checked).find(i => isMatch(i.name, name));
     const reprompt = 'Que mas necesitas?';
     if (existing) {
       const newUnits = (existing.units || 1) + 1;
-      await fsUpdate('compra', existing.id, { units: newUnits });
+      await fsUpdate(HC('compra'), existing.id, { units: newUnits });
       return h.responseBuilder.speak(existing.name+' ya estaba en la lista. He actualizado la cantidad a '+newUnits+'.').reprompt(reprompt).getResponse();
     }
     const prodMatch = allProductos.find(p => isMatch(p.name, name));
@@ -168,9 +172,9 @@ const AddShoppingHandler = {
     } else {
       cat = '\uD83E\uDDFE Varios';
       const docId = name.trim().toLowerCase().replace(/\//g, '_').replace(/\./g, '_').slice(0, 100);
-      await fsSet('productos', docId, { name: name.trim(), cat, createdAt: new Date() });
+      await fsSet(HC('productos'), docId, { name: name.trim(), cat, createdAt: new Date() });
     }
-    await fsSet('compra', genId('item'), { name, units: 1, cat, checked: false, addedBy: 'Alexa', createdAt: new Date() });
+    await fsSet(HC('compra'), genId('item'), { name, units: 1, cat, checked: false, addedBy: 'Alexa', createdAt: new Date() });
     return h.responseBuilder.speak('A\u00f1adido '+name+' a la lista de la compra.').reprompt(reprompt).getResponse();
   },
 };
@@ -183,10 +187,10 @@ const RemoveShoppingHandler = {
   async handle(h) {
     const name = h.requestEnvelope.request.intent.slots?.producto?.value;
     if (!name) return h.responseBuilder.speak('Que producto quieres eliminar?').getResponse();
-    const match = (await fsGetAll('compra')).filter(i => !i.checked).find(i => isMatch(i.name, name));
+    const match = (await fsGetAll(HC('compra'))).filter(i => !i.checked).find(i => isMatch(i.name, name));
     const reprompt = 'Que mas necesitas?';
     if (!match) return h.responseBuilder.speak('No encontre '+name+' en la lista.').reprompt(reprompt).getResponse();
-    await fsDelete('compra', match.id);
+    await fsDelete(HC('compra'), match.id);
     return h.responseBuilder.speak('Eliminado '+match.name+' de la lista.').reprompt(reprompt).getResponse();
   },
 };
@@ -197,7 +201,7 @@ const ListShoppingHandler = {
            Alexa.getIntentName(h.requestEnvelope) === 'ListShoppingIntent';
   },
   async handle(h) {
-    const items = (await fsGetAll('compra')).filter(i => !i.checked);
+    const items = (await fsGetAll(HC('compra'))).filter(i => !i.checked);
     const reprompt = 'Que mas necesitas?';
     if (!items.length) return h.responseBuilder.speak('La lista de la compra esta vacia.').reprompt(reprompt).getResponse();
     const names = items.map(i => i.name);

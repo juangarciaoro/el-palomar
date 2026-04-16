@@ -120,7 +120,7 @@ window.saveTarea = async function() {
   };
   if (editId) {
     if (CONFIGURED && db) {
-      await db.collection('tareas').doc(editId).update(data);
+      await hogarCol('tareas').doc(editId).update(data);
     } else {
       const t = tareasData.find(x => x.id === editId);
       if (t) Object.assign(t, data);
@@ -137,7 +137,7 @@ window.saveTarea = async function() {
     };
     if (CONFIGURED && db) {
       const id = `t_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
-      await db.collection('tareas').doc(id).set(tarea);
+      await hogarCol('tareas').doc(id).set(tarea);
     } else {
       tarea.id = 'lt' + Date.now();
       tareasData.push(tarea);
@@ -152,7 +152,7 @@ window.toggleTarea = async function(id) {
   const t = tareasData.find(x => x.id === id);
   if (!t) return;
   if (CONFIGURED && db) {
-    await db.collection('tareas').doc(id).update({ done: !t.done });
+    await hogarCol('tareas').doc(id).update({ done: !t.done });
   } else {
     t.done = !t.done;
     renderTareas();
@@ -166,7 +166,7 @@ window.deleteTarea = function(id) {
     confirmText: 'Eliminar',
     onConfirm: async () => {
       if (CONFIGURED && db) {
-        await db.collection('tareas').doc(id).delete();
+        await hogarCol('tareas').doc(id).delete();
       } else {
         tareasData = tareasData.filter(t => t.id !== id);
         renderTareas();

@@ -42,7 +42,7 @@ function compressImage(file, maxPx = 800, quality = 0.72) {
 // ─── Firestore listener ──────────────────────────────────
 function initRecetas() {
   if (!db) return;
-  const unsub = db.collection('recetas')
+  const unsub = hogarCol('recetas')
     .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
       recetasData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -381,10 +381,10 @@ window.saveReceta = async function () {
     };
 
     if (editingRecetaId) {
-      await db.collection('recetas').doc(editingRecetaId).update(data);
+      await hogarCol('recetas').doc(editingRecetaId).update(data);
       showToast('Receta actualizada ✓');
     } else {
-      await db.collection('recetas').add({
+      await hogarCol('recetas').add({
         ...data,
         addedBy:   currentUser || '',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -419,7 +419,7 @@ window.deleteReceta = function (id) {
     confirmText: 'Eliminar',
     onConfirm: async () => {
       try {
-        await db.collection('recetas').doc(id).delete();
+        await hogarCol('recetas').doc(id).delete();
         showToast('Receta eliminada');
       } catch (err) {
         console.error('deleteReceta:', err);

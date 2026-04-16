@@ -137,6 +137,16 @@ async function showCalMain() {
 // ─── FETCH EVENTS ─────────────────────────────────────────
 async function fetchCalEvents() {
   if (!gcalToken) return;
+
+  // Usar el calendarId del hogar activo; si no tiene, usar el de config.js como fallback
+  const calId = (window.activeHogar && window.activeHogar.calendarId)
+    ? window.activeHogar.calendarId
+    : GOOGLE_CALENDAR_ID;
+  if (!calId) {
+    document.getElementById('cal-sync-text').textContent = 'Sin calendario configurado';
+    return;
+  }
+
   document.getElementById('cal-sync-dot').classList.add('syncing');
   document.getElementById('cal-sync-text').textContent = 'Actualizando...';
 
@@ -145,7 +155,7 @@ async function fetchCalEvents() {
   const end   = new Date(now);
   end.setDate(now.getDate() + 15);
 
-  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(GOOGLE_CALENDAR_ID)}/events?` +
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?` +
     new URLSearchParams({
       timeMin:      start.toISOString(),
       timeMax:      end.toISOString(),

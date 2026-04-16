@@ -60,7 +60,7 @@ function initData() {
 
   if (CONFIGURED && db) {
     // Compra
-    unsubscribers.push(db.collection('compra').orderBy('createdAt', 'asc').onSnapshot(snap => {
+    unsubscribers.push(hogarCol('compra').orderBy('createdAt', 'asc').onSnapshot(snap => {
       compraItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderCompra();
       setSyncStatus('ok');
@@ -68,7 +68,7 @@ function initData() {
     }));
 
     // Comidas
-    unsubscribers.push(db.collection('comidas').onSnapshot(snap => {
+    unsubscribers.push(hogarCol('comidas').onSnapshot(snap => {
       comidasData = {};
       snap.docs.forEach(d => { comidasData[d.id] = d.data(); });
       renderComidas();
@@ -76,7 +76,7 @@ function initData() {
     }));
 
     // Tareas
-    unsubscribers.push(db.collection('tareas').orderBy('createdAt', 'asc').onSnapshot(snap => {
+    unsubscribers.push(hogarCol('tareas').orderBy('createdAt', 'asc').onSnapshot(snap => {
       tareasData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderTareas();
       if (currentView === 'dashboard') renderDashboard();

@@ -37,6 +37,10 @@ window.switchView = function(view, direction) {
   if (view === 'productos-temporada' && window.showProductosTemporadaView) {
     window.showProductosTemporadaView();
   }
+  // Inicializar la vista de ajustes del hogar si corresponde
+  if (view === 'ajustes-hogar' && window.showAjustesHogarView) {
+    window.showAjustesHogarView();
+  }
 
   // Preparar la vista entrante fuera de pantalla
   if (nextEl) {
