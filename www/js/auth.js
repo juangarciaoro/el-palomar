@@ -8,15 +8,12 @@ let onboardPaletteIdx = 0;
 let _loadingOnboard   = false; // guard contra doble ejecución de loadOrOnboard
 
 // ─── PENDING INVITE (capturado antes de cualquier redirect) ──
-const _pendingInviteToken = (function() {
+const { _pendingInviteToken, _pendingInviteHogarId } = (function() {
   const params = new URLSearchParams(location.search);
-  const p = params.get('invite');
-  if (p) history.replaceState({}, '', location.pathname); // limpiar URL
-  return p || null;
-})();
-const _pendingInviteHogarId = (function() {
-  const params = new URLSearchParams(location.search);
-  return params.get('hogar') || null;
+  const token  = params.get('invite') || null;
+  const hogar  = params.get('hogar')  || null;
+  if (token) history.replaceState({}, '', location.pathname); // limpiar URL
+  return { _pendingInviteToken: token, _pendingInviteHogarId: hogar };
 })();
 
 // ─── LOADING SCREEN ─────────────────────────────────────────
