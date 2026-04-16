@@ -123,23 +123,13 @@ async function acceptInvite(token, uid, hogarIdHint) {
 
     const now = firebase.firestore.FieldValue.serverTimestamp();
 
-    // Verificar si ya es miembro
-    const memberSnap = await db.collection('hogares').doc(hogarId)
-      .collection('members').doc(uid).get();
-    if (memberSnap.exists) {
-      await db.collection('users').doc(uid).update({ activeHogarId: hogarId });
-      const hogarSnap = await db.collection('hogares').doc(hogarId).get();
-      window.activeHogar   = { id: hogarId, ...hogarSnap.data() };
-      window.activeHogarId = hogarId;
-      showToast(`Ya perteneces a "${window.activeHogar.nombre}"`);
-      return true;
-    }
-
-    // Añadir como miembro + marcar invite usada
+    // Añadir como miembro (set con merge:true preserva rol admin si ya existía)
+    // + marcar invite como usada + actualizar activeHogarId — todo en un batch
     const batch = db.batch();
     batch.set(
       db.collection('hogares').doc(hogarId).collection('members').doc(uid),
-      { role: 'member', joinedAt: now }
+      { role: 'member', joinedAt: now },
+      { merge: true }
     );
     batch.update(
       db.collection('hogares').doc(hogarId).collection('invitaciones').doc(token),

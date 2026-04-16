@@ -69,8 +69,10 @@ service cloud.firestore {
       // ── Subcolección members ─────────────────────────────────────────────
       match /members/{memberId} {
 
-        // Cualquier miembro puede ver la lista de miembros
-        allow read: if isMember(hogarId);
+        // Miembros pueden ver la lista; cualquier usuario puede leer su propio doc
+        // (necesario para acceptInvite y renderMisHogares sin ser miembro aún)
+        allow read: if isMember(hogarId)
+                    || (request.auth != null && request.auth.uid == memberId);
 
         // Admins pueden añadir/cambiar roles; un usuario puede auto-unirse con
         // role=member para aceptar una invitación (el token se valida en el cliente,
