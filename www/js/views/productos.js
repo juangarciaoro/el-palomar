@@ -77,7 +77,7 @@ function renderProductos() {
       <div class="category-label">${cat}</div>
       ${items.map(p => `
         <div class="shop-item" id="prod-${p.id}">
-          <span class="item-name">${p.name}</span>
+          <span class="item-name prod-name-editable" title="Toca para editar" onclick="startEditProductoName(this, '${p.id}', ${JSON.stringify(p.name)})">${p.name}</span>
           <select class="compra-inline-cat prod-cat-select" onchange="updateProductoCat('${p.id}', this.value)">
             ${CAT_OPTIONS.map(o => `<option value="${o}"${o === (p.cat || '🧾 Varios') ? ' selected' : ''}>${o}</option>`).join('')}
           </select>
@@ -118,6 +118,47 @@ window.updateProductoCat = async function(id, newCat) {
     showToast('Error al actualizar la categoría');
   }
 };
+// ─── Renombrar producto ──────────────────────────────────
+window.startEditProductoName = function(spanEl, id, currentName) {
+  if (spanEl.querySelector('input')) return; // ya en edición
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = currentName;
+  input.className = 'prod-name-input';
+  input.style.cssText = 'width:100%;border:none;outline:none;background:transparent;font:inherit;color:inherit;padding:0;margin:0;';
+  spanEl.textContent = '';
+  spanEl.appendChild(input);
+  input.focus();
+  input.select();
+
+  let saved = false;
+  const save = async () => {
+    if (saved) return;
+    saved = true;
+    const newName = input.value.trim();
+    spanEl.textContent = newName || currentName;
+    if (newName && newName !== currentName) {
+      await renameProducto(id, currentName, newName);
+    }
+  };
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { input.blur(); }
+    if (e.key === 'Escape') { saved = true; spanEl.textContent = currentName; }
+  });
+};
+
+window.renameProducto = async function(id, oldName, newName) {
+  if (!CONFIGURED || !db || !newName) return;
+  try {
+    await hogarCol('productos').doc(id).update({ name: newName });
+    showToast(`"${oldName}" renombrado a "${newName}"`);
+  } catch(e) {
+    console.error('renameProducto:', e);
+    showToast('Error al renombrar el producto');
+  }
+};
+
 window.deleteProducto = function(id, name) {
   showConfirm({
     title: 'Eliminar producto',

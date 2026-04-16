@@ -968,6 +968,8 @@ ul { list-style: none; }
   pointer-events: none;
 }
 .shop-item.checked .item-name::after { width: 100%; }
+.prod-name-editable { cursor: text; }
+.prod-name-editable:hover { text-decoration: underline dotted var(--text-muted); }
 .item-qty {
   font-size: 0.8rem;
   color: var(--text-muted);
