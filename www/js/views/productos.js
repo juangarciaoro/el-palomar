@@ -77,7 +77,7 @@ function renderProductos() {
       <div class="category-label">${cat}</div>
       ${items.map(p => `
         <div class="shop-item" id="prod-${p.id}">
-          <span class="item-name prod-name-editable" title="Toca para editar" onclick="startEditProductoName(this, '${p.id}', ${JSON.stringify(p.name)})">${p.name}</span>
+          <span class="item-name prod-name-editable" title="Toca para editar" onclick="startEditProductoName(this, '${p.id}', '${p.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">${p.name}</span>
           <select class="compra-inline-cat prod-cat-select" onchange="updateProductoCat('${p.id}', this.value)">
             ${CAT_OPTIONS.map(o => `<option value="${o}"${o === (p.cat || '🧾 Varios') ? ' selected' : ''}>${o}</option>`).join('')}
           </select>
