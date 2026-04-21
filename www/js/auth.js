@@ -351,10 +351,15 @@ async function populateAssignDropdown() {
   if (!group) return;
   group.innerHTML = '';
   if (!db) return;
+  const hogarId = window.activeHogarId;
+  if (!hogarId) return;
   try {
-    const snap = await db.collection('users').get();
-    snap.docs.forEach(d => {
-      const name = d.data().displayName;
+    const membersSnap = await db.collection('hogares').doc(hogarId).collection('members').get();
+    const uids = membersSnap.docs.map(d => d.id);
+    const profileSnaps = await Promise.all(uids.map(uid => db.collection('users').doc(uid).get()));
+    profileSnaps.forEach(doc => {
+      if (!doc.exists) return;
+      const name = doc.data().displayName;
       if (!name) return;
       const chip = document.createElement('div');
       chip.className = 'assign-chip';

@@ -45,7 +45,7 @@ function applyComidasAvatars() {
     el.setAttribute('aria-hidden', 'false');
     el.setAttribute('aria-label', 'Ver receta ' + (matched.name || ''));
     el.tabIndex = 0;
-    el.onclick = function(e) { e.stopPropagation(); if (typeof openRecetaDetail === 'function') openRecetaDetail(matched.id); };
+    el.onclick = function(e) { e.stopPropagation(); var d = el.dataset.date; var s = el.dataset.slot; if (d && s && typeof openMealEdit === 'function') openMealEdit(d, s); };
     el.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.onclick(e); } };
   });
 }
@@ -107,7 +107,7 @@ function renderComidas() {
                 : '<div class="meal-empty">Sin planear</div>')
               + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
               + '</div>'
-              + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+              + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="comida" aria-hidden="true" role="button"></div>' : '')
               + '</div>'
           : '<div class="meal-slot meal-slot-blank"></div>') +
         (showCena
@@ -119,7 +119,7 @@ function renderComidas() {
                 : '<div class="meal-empty">Sin planear</div>')
               + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
               + '</div>'
-              + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+              + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="cena" aria-hidden="true" role="button"></div>' : '')
               + '</div>'
           : '<div class="meal-slot meal-slot-blank"></div>') +
       '</div></div>';
@@ -143,7 +143,7 @@ function renderComidas() {
               : '<div class="cm-meal-empty">Sin planear</div>')
           + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
           + '</div>'
-          + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+          + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="comida" aria-hidden="true" role="button"></div>' : '')
           + '</div>'
       : '<div class="cm-day-slot cm-day-slot-blank"></div>';
 
@@ -156,7 +156,7 @@ function renderComidas() {
               : '<div class="cm-meal-empty">Sin planear</div>')
           + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
           + '</div>'
-          + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" aria-hidden="true" role="button"></div>' : '')
+          + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="cena" aria-hidden="true" role="button"></div>' : '')
           + '</div>'
       : '<div class="cm-day-slot cm-day-slot-blank"></div>';
 
@@ -191,7 +191,7 @@ window.openMealEdit = function(date, slot) {
   updateMealRecipeIngredients(mealName);
 
   openModal('modal-comida');
-  setTimeout(() => document.getElementById('comida-input').focus(), 300);
+  if (window.innerWidth >= 768) setTimeout(() => document.getElementById('comida-input').focus(), 300);
 };
 
 window.saveMeal = async function() {
