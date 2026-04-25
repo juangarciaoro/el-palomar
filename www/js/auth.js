@@ -30,6 +30,9 @@ function hideLoading() {
 async function initAuth() {
   if (!CONFIGURED) { showLoginScreen(); return; }
 
+  // Comprobar si hay actualización disponible en Play Store (solo nativo)
+  await checkForUpdate();
+
   showLoading();
   // El listener cubre tanto web como nativo
   firebase.auth().onAuthStateChanged(async (user) => {
