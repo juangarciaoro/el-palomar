@@ -15,15 +15,12 @@ function _normMeal(s) {
 }
 
 function applyComidasAvatars() {
-  document.querySelectorAll('#comidas-grid .cm-day-avatar[data-meal]').forEach(function(el) {
+  document.querySelectorAll(
+    '#comidas-grid .meal-slot[data-meal], #comidas-grid .cm-day-slot[data-meal]'
+  ).forEach(function(el) {
     const mealName = el.dataset.meal;
-    el.innerHTML = '';
-    el.style.display = 'none';
-    el.onclick = null;
-    el.onkeydown = null;
-    el.removeAttribute('aria-label');
-    el.setAttribute('aria-hidden', 'true');
-    el.tabIndex = -1;
+    el.style.backgroundImage = '';
+    el.classList.remove('has-photo');
     if (!mealName) return;
     const target = _normMeal(mealName);
     let matched = null;
@@ -35,18 +32,8 @@ function applyComidasAvatars() {
     if (!matched) return;
     const photo = matched.photoData || matched.photoURL || null;
     if (!photo) return;
-    const img = document.createElement('img');
-    img.className = 'dash-menu-avatar-img';
-    img.alt = matched.name || 'Receta';
-    img.loading = 'lazy';
-    img.src = photo;
-    el.appendChild(img);
-    el.style.display = 'block';
-    el.setAttribute('aria-hidden', 'false');
-    el.setAttribute('aria-label', 'Ver receta ' + (matched.name || ''));
-    el.tabIndex = 0;
-    el.onclick = function(e) { e.stopPropagation(); var d = el.dataset.date; var s = el.dataset.slot; if (d && s && typeof openMealEdit === 'function') openMealEdit(d, s); };
-    el.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.onclick(e); } };
+    el.style.backgroundImage = 'url(' + photo + ')';
+    el.classList.add('has-photo');
   });
 }
 
@@ -99,27 +86,25 @@ function renderComidas() {
       '</div>' +
       '<div class="meals-row">' +
         (showComida
-          ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
+          ? '<div class="meal-slot" data-meal="' + (data.comida ? data.comida.replace(/"/g, '&quot;') : '') + '" onclick="openMealEdit(\'' + key + '\',\'comida\')">' 
               + '<div class="meal-slot-content">'
               + '<div class="meal-type">Almuerzo</div>'
               + (data.comida
-                ? '<div class="meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.comidaNotes + '</div>' : '')
+                ? '<div class="meal-text">' + data.comida + '</div>' + (data.comidaNotes ? '<div class="meal-slot-notes">' + data.comidaNotes + '</div>' : '')
                 : '<div class="meal-empty">Sin planear</div>')
               + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
               + '</div>'
-              + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="comida" aria-hidden="true" role="button"></div>' : '')
               + '</div>'
           : '<div class="meal-slot meal-slot-blank"></div>') +
         (showCena
-          ? '<div class="meal-slot" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
+          ? '<div class="meal-slot" data-meal="' + (data.cena ? data.cena.replace(/"/g, '&quot;') : '') + '" onclick="openMealEdit(\'' + key + '\',\'cena\')">' 
               + '<div class="meal-slot-content">'
               + '<div class="meal-type">Cena</div>'
               + (data.cena
-                ? '<div class="meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">' + data.cenaNotes + '</div>' : '')
+                ? '<div class="meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div class="meal-slot-notes">' + data.cenaNotes + '</div>' : '')
                 : '<div class="meal-empty">Sin planear</div>')
               + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
               + '</div>'
-              + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="cena" aria-hidden="true" role="button"></div>' : '')
               + '</div>'
           : '<div class="meal-slot meal-slot-blank"></div>') +
       '</div></div>';
@@ -135,7 +120,7 @@ function renderComidas() {
     const todayCls   = isToday(d) ? ' today' : '';
 
     const comidaSlot = showComida
-      ? '<div class="cm-day-slot' + todayCls + '" onclick="openMealEdit(\'' + key + '\',\'comida\')">'
+      ? '<div class="cm-day-slot' + todayCls + '" data-meal="' + (data.comida ? data.comida.replace(/"/g, '&quot;') : '') + '" onclick="openMealEdit(\'' + key + '\',\'comida\')">' 
           + '<div class="cm-slot-content">'
           + '<span class="cm-day-slot-type"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-sun"></use></svg> Almuerzo</span>'
           + (data.comida
@@ -143,20 +128,17 @@ function renderComidas() {
               : '<div class="cm-meal-empty">Sin planear</div>')
           + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
           + '</div>'
-          + (data.comida ? '<div class="cm-day-avatar" data-meal="' + data.comida.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="comida" aria-hidden="true" role="button"></div>' : '')
           + '</div>'
       : '<div class="cm-day-slot cm-day-slot-blank"></div>';
 
     const cenaSlot = showCena
-      ? '<div class="cm-day-slot' + todayCls + '" onclick="openMealEdit(\'' + key + '\',\'cena\')">'
+      ? '<div class="cm-day-slot' + todayCls + '" data-meal="' + (data.cena ? data.cena.replace(/"/g, '&quot;') : '') + '" onclick="openMealEdit(\'' + key + '\',\'cena\')">' 
           + '<div class="cm-slot-content">'
           + '<span class="cm-day-slot-type"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-moon"></use></svg> Cena</span>'
           + (data.cena
               ? '<div class="cm-meal-text">' + data.cena + '</div>' + (data.cenaNotes ? '<div class="cm-meal-notes">' + data.cenaNotes + '</div>' : '')
               : '<div class="cm-meal-empty">Sin planear</div>')
           + '<span class="meal-add-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-edit"></use></svg></span>'
-          + '</div>'
-          + (data.cena ? '<div class="cm-day-avatar" data-meal="' + data.cena.replace(/"/g, '&quot;') + '" data-date="' + key + '" data-slot="cena" aria-hidden="true" role="button"></div>' : '')
           + '</div>'
       : '<div class="cm-day-slot cm-day-slot-blank"></div>';
 

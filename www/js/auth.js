@@ -170,14 +170,20 @@ window.loginWithGoogle = async function() {
     try {
       showLoading();
       const { FirebaseAuthentication } = window.Capacitor.Plugins;
+      // Siempre pedimos el scope de Calendar: si ya fue concedido, Google no muestra
+      // pantalla de consentimiento y devuelve el access token silenciosamente.
       const result = await FirebaseAuthentication.signInWithGoogle({
         scopes: ['https://www.googleapis.com/auth/calendar']
       });
       // Guardar accessToken en localStorage ANTES de signInWithCredential
       const token = result.credential && result.credential.accessToken;
+      const uid   = result.user && result.user.uid;
+      const email = result.user && result.user.email;
       if (token) {
-        localStorage.setItem('gcal_token',     token);
-        localStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
+        localStorage.setItem('gcal_token',                    token);
+        localStorage.setItem('gcal_token_exp',                String(Date.now() + 3600 * 1000));
+        if (uid)   localStorage.setItem(`gcal_scope_granted_${uid}`, '1');
+        if (email) localStorage.setItem('gcal_login_hint', email);
       }
       // signInWithCredential dispara onAuthStateChanged → loadOrOnboard() → showApp()
       const credential = firebase.auth.GoogleAuthProvider.credential(result.credential.idToken);
@@ -200,14 +206,20 @@ window.loginWithGoogle = async function() {
     // En navegador: usa popup (funciona en GitHub Pages y localhost)
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/calendar');
-    provider.setCustomParameters({ prompt: 'select_account' });
+    // En web no tenemos UID antes del signIn, usamos la flag genérica como aproximación
+    // (el consent screen de Google ya gestiona por cuenta internamente)
+    const calAlreadyGranted = !!localStorage.getItem('gcal_scope_granted');
+    provider.setCustomParameters({ prompt: calAlreadyGranted ? 'select_account' : 'consent' });
     try {
       showLoading();
       const result = await firebase.auth().signInWithPopup(provider);
+      const uid   = result.user && result.user.uid;
       const token = result.credential && result.credential.accessToken;
       if (token) {
         localStorage.setItem('gcal_token',     token);
         localStorage.setItem('gcal_token_exp', String(Date.now() + 3600 * 1000));
+        localStorage.setItem('gcal_scope_granted', '1');
+        if (uid) localStorage.setItem(`gcal_scope_granted_${uid}`, '1');
       }
     } catch (err) {
       hideLoading();
@@ -226,7 +238,8 @@ window.logout = async function() {
   sessionStorage.clear();
   localStorage.removeItem('gcal_token');
   localStorage.removeItem('gcal_token_exp');
-  localStorage.removeItem('gcal_scope_granted');
+  // gcal_scope_granted se conserva: el consentimiento fue dado a la cuenta Google,
+  // no a la sesión. Eliminarlo solo si el usuario revoca el acceso a Calendar.
   currentUser  = null;
   firebaseUser = null;
   userProfile  = null;

@@ -7,3 +7,15 @@ package-lock.json
 *firebase-adminsdk*.json
 alexa-skill/lambda/node_modules/
 alexa-skill/deployment.zip
+
+# Artefactos de build
+lambda-deploy.zip
+
+# Datos de entorno local
+EL_PALOMAR_HOGAR_ID.txt
+
+# Preferencias personales del editor
+.vscode/
+
+# Imágenes generadas (regenerar con scripts/)
+resources/feature_graphics/

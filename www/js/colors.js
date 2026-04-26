@@ -13,6 +13,12 @@ const COLOR_PALETTES = [
 function applyPalette(index) {
   const p = COLOR_PALETTES[index] || COLOR_PALETTES[0];
   const r = document.documentElement;
+  // Set brand semantic tokens so CSS design-tokens can drive the UI
+  r.style.setProperty('--brand-accent',       p.accent);
+  r.style.setProperty('--brand-accent-light', p.light);
+  r.style.setProperty('--brand-accent-pale',  p.pale);
+  r.style.setProperty('--brand-accent-dark',  p.dark);
+  // Keep legacy vars for compatibility with older code
   r.style.setProperty('--accent',       p.accent);
   r.style.setProperty('--accent-light', p.light);
   r.style.setProperty('--accent-pale',  p.pale);
@@ -47,6 +53,7 @@ window.selectPalette = async function(index) {
     } catch(e) { /* silent */ }
   }
   renderColorSwatches('color-swatches-grid', index, 'selectPalette');
+  if (typeof updateDrawerThemeRow === 'function') updateDrawerThemeRow(index);
   closeModal('modal-color-picker');
   showToast('Color de acento actualizado ✓');
 };

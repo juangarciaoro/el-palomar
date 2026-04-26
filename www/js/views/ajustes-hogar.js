@@ -84,12 +84,18 @@ async function renderAjustesHogar() {
     <div class="card" style="padding:1.25rem;margin-bottom:1rem">
       <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:.05em">Google Calendar</div>
       ${isAdmin
-        ? `<div style="display:flex;gap:0.5rem;align-items:center">
-            <input class="form-input" id="hogar-cal-input" value="${hogar.calendarId || ''}" placeholder="ID del calendario de Google" style="flex:1;font-size:0.82rem">
-            <button class="btn-primary" style="padding:0.5rem 0.9rem;font-size:0.85rem" onclick="saveHogarCalendar()">Guardar</button>
+        ? `<div style="display:flex;align-items:center;gap:0.75rem">
+            <div style="flex:1;min-width:0">
+              <div id="hogar-cal-name" style="font-size:0.9rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                ${hogar.calendarId ? (hogar.calendarName || hogar.calendarId) : 'Sin configurar'}
+              </div>
+
+            </div>
+            <button class="btn-secondary" style="flex-shrink:0;font-size:0.82rem;padding:0.45rem 0.8rem" onclick="openCalendarPicker()">Seleccionar →</button>
           </div>
-          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem">Encuentra el ID en Google Calendar → Configuración → ID del calendario.</div>`
-        : `<div style="font-size:0.85rem;color:var(--text-muted)">${hogar.calendarId || 'No configurado'}</div>`
+          <!-- fallback: input manual -->
+          <input type="hidden" id="hogar-cal-input" value="${hogar.calendarId || ''}">`
+        : `<div style="font-size:0.85rem;color:var(--text-muted)">${hogar.calendarId ? (hogar.calendarName || hogar.calendarId) : 'No configurado'}</div>`
       }
     </div>
 
@@ -158,7 +164,7 @@ window.saveHogarNombre = async function() {
   }
 };
 
-// ─── Guardar calendarId del hogar ─────────────────────────
+// ─── Guardar calendarId del hogar (fallback manual) ──────
 window.saveHogarCalendar = async function() {
   const input = document.getElementById('hogar-cal-input');
   const calendarId = input ? input.value.trim() : '';
@@ -171,6 +177,111 @@ window.saveHogarCalendar = async function() {
     showToast('Error al guardar el Calendar ID');
   }
 };
+
+// ─── Abrir modal selector de calendarios Google ───────────
+window.openCalendarPicker = function() {
+  const token    = localStorage.getItem('gcal_token');
+  const tokenExp = parseInt(localStorage.getItem('gcal_token_exp') || '0', 10);
+  if (!token || Date.now() > tokenExp) {
+    showToast('Conecta primero Google Calendar en la sección Calendario');
+    return;
+  }
+
+  // Mostrar modal en estado loading
+  const elLoading = document.getElementById('cal-picker-loading');
+  const elError   = document.getElementById('cal-picker-error');
+  const elList    = document.getElementById('cal-picker-list');
+  elLoading.style.display = '';
+  elError.style.display   = 'none';
+  elList.style.display    = 'none';
+  elList.innerHTML        = '';
+  openModal('modal-cal-picker');
+
+  const currentId = (window.activeHogar && window.activeHogar.calendarId) || '';
+
+  fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=writer', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(res) {
+    if (res.status === 401) throw new Error('token_expired');
+    if (!res.ok) throw new Error('api_error_' + res.status);
+    return res.json();
+  })
+  .then(function(data) {
+    elLoading.style.display = 'none';
+    const items = (data.items || []).sort(function(a, b) {
+      if (a.primary) return -1;
+      if (b.primary) return 1;
+      return (a.summaryOverride || a.summary || '').localeCompare(b.summaryOverride || b.summary || '');
+    });
+    if (!items.length) {
+      document.getElementById('cal-picker-error-msg').textContent = 'No se encontraron calendarios con permisos de escritura.';
+      elError.style.display = '';
+      return;
+    }
+    // Si el hogar tiene calendarId pero aún no calendarName, guardarlo silenciosamente
+    if (currentId && !(window.activeHogar && window.activeHogar.calendarName)) {
+      const found = items.find(function(c) { return c.id === currentId; });
+      if (found) {
+        const resolvedName = found.summaryOverride || found.summary || currentId;
+        db.collection('hogares').doc(window.activeHogarId)
+          .update({ calendarName: resolvedName })
+          .then(function() {
+            if (window.activeHogar) window.activeHogar.calendarName = resolvedName;
+            const nameEl = document.getElementById('hogar-cal-name');
+            if (nameEl) nameEl.textContent = resolvedName;
+          })
+          .catch(function() {});
+      }
+    }
+
+    elList.innerHTML = items.map(function(cal) {
+      const id      = cal.id;
+      const name    = cal.summaryOverride || cal.summary || id;
+      const email   = cal.id !== cal.summary ? cal.id : '';
+      const color   = cal.backgroundColor || '#888';
+      const sel     = id === currentId;
+      return `<div class="cal-picker-row${sel ? ' is-selected' : ''}" onclick="selectCalendar('${id.replace(/'/g, "\\'")}', '${name.replace(/'/g, "\\'")}')">
+        <span class="cal-picker-dot" style="background:${color}"></span>
+        <span class="cal-picker-name">${name}${cal.primary ? ' <span class="cal-picker-badge">Principal</span>' : ''}</span>
+        ${email && email !== name ? `<span class="cal-picker-email">${email}</span>` : ''}
+        <svg class="cal-picker-check" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="2.5,8.5 6.5,12.5 13.5,4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>`;
+    }).join('');
+    elList.style.display = '';
+  })
+  .catch(function(err) {
+    elLoading.style.display = 'none';
+    const msg = err.message === 'token_expired'
+      ? 'Tu sesión de Google Calendar ha caducado. Vuelve a conectarla desde la sección Calendario.'
+      : 'No se pudieron cargar los calendarios. Comprueba tu conexión.';
+    document.getElementById('cal-picker-error-msg').textContent = msg;
+    elError.style.display = '';
+    console.error('calendarList:', err);
+  });
+};
+
+// ─── Seleccionar un calendario y guardarlo en Firestore ───
+window.selectCalendar = async function(calendarId, calendarName) {
+  try {
+    await db.collection('hogares').doc(window.activeHogarId).update({ calendarId, calendarName });
+    window.activeHogar.calendarId   = calendarId;
+    window.activeHogar.calendarName = calendarName;
+    // Actualizar row de ajustes sin re-renderizar todo
+    const nameEl = document.getElementById('hogar-cal-name');
+    if (nameEl) nameEl.textContent = calendarName || calendarId;
+    const hiddenInput = document.getElementById('hogar-cal-input');
+    if (hiddenInput) hiddenInput.value = calendarId;
+    closeModal('modal-cal-picker');
+    showToast('Calendario guardado');
+  } catch(e) {
+    console.error('selectCalendar:', e);
+    showToast('Error al guardar el calendario');
+  }
+};
+
 
 // ─── Invitaciones ─────────────────────────────────────────
 window.generarInvitacion = async function() {

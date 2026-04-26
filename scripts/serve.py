@@ -6,6 +6,9 @@ import os
 import json
 import sys
 
+# Raíz del proyecto (un nivel arriba de scripts/)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def subir_productos_temporada():
     try:
         from google.cloud import firestore
@@ -17,9 +20,9 @@ def subir_productos_temporada():
         from google.cloud import firestore
         from google.oauth2 import service_account
 
-    cred_path = os.path.join(os.path.dirname(__file__), 'el-palomar-abed2-firebase-adminsdk-fbsvc-f2ea8d5793.json')
+    cred_path = os.path.join(ROOT, 'el-palomar-abed2-firebase-adminsdk-fbsvc-f2ea8d5793.json')
     # Buscar el JSON de datos de temporada en la raíz del proyecto
-    data_path = os.path.join(os.path.dirname(__file__), 'temporada_espana.json')
+    data_path = os.path.join(ROOT, 'temporada_espana.json')
     if not os.path.exists(data_path):
         print('No se encontró temporada_espana.json en', data_path, '- omitiendo subida de productos de temporada.')
         return
@@ -48,7 +51,7 @@ PORT = 8080
 HOST = "localhost"
 ENTRY = "www/index.html"
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(ROOT)
 
 handler = http.server.SimpleHTTPRequestHandler
 

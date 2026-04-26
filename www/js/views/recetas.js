@@ -101,11 +101,9 @@ function renderRecetas() {
   grid.innerHTML = `<div class="recetas-grid">${filtered.map(r => {
     const numIng = (r.ingredients || []).length;
     const photo  = r.photoData || r.photoURL || null;
-    return `<div class="receta-card" onclick="openRecetaDetail('${r.id}')">
-      <div class="receta-photo-thumb" style="${photo ? `background-image:url('${photo}')` : ''}">
-        ${!photo ? '<span class="receta-photo-empty"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-utensils"></use></svg></span>' : ''}
-      </div>
-      <div class="receta-card-body">
+    return `<div class="receta-card${!photo ? ' receta-card--no-photo' : ''}" style="${photo ? `background-image:url('${photo}')` : ''}" onclick="openRecetaDetail('${r.id}')">
+      <div class="receta-card-overlay"></div>
+      <div class="receta-card-footer">
         <div class="receta-card-name">${r.name}</div>
         <div class="receta-card-meta">${numIng} ingrediente${numIng !== 1 ? 's' : ''}</div>
       </div>

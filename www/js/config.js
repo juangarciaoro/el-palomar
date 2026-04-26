@@ -10,10 +10,6 @@ const FIREBASE_CONFIG = {
   appId: "1:493810032587:web:377ddf1acaa3d2c65d204e"
 };
 
-// ─── GOOGLE CALENDAR ──────────────────────────────────
-// ID del calendario a usar (o 'primary' para el principal)
-const GOOGLE_CALENDAR_ID = 'ovvtdfmk9lq9pqn2n3sl7cdtso@group.calendar.google.com';
-
 // ─── MULTI-HOGAR ──────────────────────────────────────────
 window.activeHogar   = null;  // objeto completo del hogar activo
 window.activeHogarId = null;  // id del hogar activo (shorthand)

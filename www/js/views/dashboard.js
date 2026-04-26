@@ -38,17 +38,17 @@ function renderDashboard() {
   const comidaAvatarEl = document.getElementById('dash-menu-comida-avatar');
   const cenaAvatarEl   = document.getElementById('dash-menu-cena-avatar');
 
-  function applyAvatar(mealName, el) {
-    if (!el) return;
-    el.style.display = 'none';
-    el.style.backgroundImage = '';
-    el.onclick = null;
-    el.onkeydown = null;
-    el.removeAttribute('aria-label');
-    el.setAttribute('aria-hidden', 'true');
-    try { el.tabIndex = -1; } catch(e) {}
-    if (!mealName) return;
-    // Normalizar texto para comparaciones más tolerantes
+  function applyAvatar(mealName, avatarEl) {
+    const slot = avatarEl ? avatarEl.closest('.dash-menu-slot') : null;
+    if (slot) {
+      slot.style.backgroundImage = '';
+      slot.classList.remove('has-photo');
+    }
+    if (avatarEl) {
+      avatarEl.style.display = 'none';
+      avatarEl.innerHTML = '';
+    }
+    if (!mealName || !slot) return;
     function norm(s) {
       if (!s) return '';
       return s.toString().trim().toLowerCase()
@@ -59,36 +59,15 @@ function renderDashboard() {
     const target = norm(mealName);
     let matched = null;
     if (typeof recetasData !== 'undefined' && recetasData && recetasData.length) {
-      // 1) exact normalized match
       matched = recetasData.find(r => norm(r.name) === target);
-      // 2) recipe name contains target or viceversa
       if (!matched) matched = recetasData.find(r => norm(r.name).includes(target) || target.includes(norm(r.name)));
-      // 3) startsWith / endsWith
       if (!matched) matched = recetasData.find(r => norm(r.name).startsWith(target) || norm(r.name).endsWith(target));
     }
-    if (matched) {
-      console.debug && console.debug('dashboard: avatar matched', matched.id, matched.name, 'for', mealName);
-      const photo = matched.photoData || matched.photoURL || null;
-      if (photo) {
-        // Limpia contenido previo e inserta una etiqueta <img> para mejor compatibilidad
-        el.innerHTML = '';
-        const img = document.createElement('img');
-        img.className = 'dash-menu-avatar-img';
-        img.alt = matched.name || 'Receta';
-        img.loading = 'lazy';
-        img.src = photo;
-        el.appendChild(img);
-        el.style.display = 'block';
-        el.setAttribute('aria-hidden', 'false');
-        el.setAttribute('aria-label', 'Ver receta ' + (matched.name || ''));
-        try { el.tabIndex = 0; } catch(e) {}
-        el.onclick = function(e) { e.stopPropagation(); if (typeof openRecetaDetail === 'function') openRecetaDetail(matched.id); };
-        el.onkeydown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.onclick(e); } };
-      }
-    }
-    else {
-      console.debug && console.debug('dashboard: no avatar match for', mealName);
-    }
+    if (!matched) return;
+    const photo = matched.photoData || matched.photoURL || null;
+    if (!photo) return;
+    slot.style.backgroundImage = 'url(' + photo + ')';
+    slot.classList.add('has-photo');
   }
 
   applyAvatar(todayMenu.comida, comidaAvatarEl);

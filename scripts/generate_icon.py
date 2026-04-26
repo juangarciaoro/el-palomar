@@ -5,6 +5,9 @@ Técnica: polígonos rellenos + supersampling 4x, sin strokes Pillow.
 import os, math
 from PIL import Image, ImageDraw
 
+# Raíz del proyecto (un nivel arriba de scripts/)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 RENDER = 4096
 OUT    = 1024
 ACCENT = (196, 98, 45, 255)
@@ -75,6 +78,6 @@ thick_line(18,21, 18,26, SW2)
 thick_arc(cx=16, cy=21, r=2, a0=0, a1=math.pi, w=SW2)
 
 result = img.resize((OUT, OUT), Image.LANCZOS)
-os.makedirs("resources", exist_ok=True)
-result.save("resources/icon.png", "PNG")
+os.makedirs(os.path.join(ROOT, "resources"), exist_ok=True)
+result.save(os.path.join(ROOT, "resources", "icon.png"), "PNG")
 print(f"✓  resources/icon.png  ({OUT}x{OUT} px)")

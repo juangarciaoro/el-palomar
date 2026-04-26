@@ -323,7 +323,7 @@ window.openUserDrawer = function() {
 
   const idx = (typeof userProfile !== 'undefined' && userProfile && userProfile.paletteIndex != null)
     ? userProfile.paletteIndex : 0;
-  renderColorSwatches('drawer-swatches', idx, 'drawerSelectPalette');
+  updateDrawerThemeRow(idx);
 
   document.getElementById('drawer-overlay').classList.add('open');
   document.getElementById('user-drawer').classList.add('open');
@@ -345,8 +345,17 @@ window.drawerSelectPalette = async function(index) {
       await db.collection('users').doc(firebaseUser.uid).update({ paletteIndex: index });
     } catch(e) { /* silent */ }
   }
-  renderColorSwatches('drawer-swatches', index, 'drawerSelectPalette');
+  updateDrawerThemeRow(index);
   showToast('Color de acento actualizado ✓');
+};
+
+window.updateDrawerThemeRow = function(index) {
+  const p = (typeof COLOR_PALETTES !== 'undefined' && COLOR_PALETTES[index]) || null;
+  if (!p) return;
+  const circle = document.getElementById('drawer-theme-circle');
+  const nameEl = document.getElementById('drawer-theme-name');
+  if (circle) circle.style.background = p.accent;
+  if (nameEl) nameEl.textContent = p.name;
 };
 
 // ─── NOTIFICACIONES WEB PUSH ──────────────────────────────

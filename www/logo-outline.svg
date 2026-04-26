@@ -1,15 +1,8 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
 <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="130.000000pt" height="156.000000pt" viewBox="0 0 130.000000 156.000000"
+ viewBox="0 0 130 156"
  preserveAspectRatio="xMidYMid meet">
-
-<!-- Fondo terracota con esquinas redondeadas -->
-<rect width="130" height="156" rx="25" ry="25" fill="#C4622D"/>
-
-<g transform="translate(0.000000,156.000000) scale(0.100000,-0.100000)"
-fill="#ffffff" stroke="none">
+<g transform="translate(0,156) scale(0.1,-0.1)"
+fill="#C4622D" stroke="none">
 <path d="M547 1443 c-40 -37 -139 -130 -222 -208 -82 -78 -177 -167 -210 -198
 -43 -40 -57 -59 -49 -67 8 -8 18 -5 36 10 l26 20 4 -237 c4 -263 11 -295 80
 -411 91 -151 281 -271 438 -275 64 -2 79 14 23 26 -115 23 -145 32 -161 43

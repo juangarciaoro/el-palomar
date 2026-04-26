@@ -148,6 +148,33 @@ window.calInit = async function() {
     gcalTokenExp = e;
     await fetchCalEvents();
     if (currentView === 'dashboard') renderDashboard();
+  } else if (isNative()) {
+    // Token expirado: silent refresh si esta cuenta ya concedió el scope
+    const uid = firebase.auth().currentUser && firebase.auth().currentUser.uid;
+    const scopeGranted = uid
+      ? !!localStorage.getItem(`gcal_scope_granted_${uid}`)
+      : !!localStorage.getItem('gcal_scope_granted');
+    if (scopeGranted) {
+      try {
+        const { FirebaseAuthentication } = window.Capacitor.Plugins;
+        const loginHint = localStorage.getItem('gcal_login_hint');
+        const result = await FirebaseAuthentication.signInWithGoogle({
+          scopes: ['https://www.googleapis.com/auth/calendar'],
+          ...(loginHint && { loginHint })
+        });
+        const newToken = result.credential && result.credential.accessToken;
+        if (newToken) {
+          gcalToken    = newToken;
+          gcalTokenExp = Date.now() + 3600 * 1000;
+          localStorage.setItem('gcal_token',     newToken);
+          localStorage.setItem('gcal_token_exp', String(gcalTokenExp));
+          await fetchCalEvents();
+          if (currentView === 'dashboard') renderDashboard();
+        }
+      } catch (_) {
+        // Silent refresh falló (sin conexión, cuenta eliminada, etc.) — ignorar
+      }
+    }
   }
 };
 

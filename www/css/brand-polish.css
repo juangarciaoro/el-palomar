@@ -1,0 +1,880 @@
+/* ═══════════════════════════════════════════════════════════
+   El Palomar — Brand Polish
+   Visual identity enhancements layered on top of styles.css.
+   Loaded last so every rule here wins over component defaults.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── 1. UPDATED RADIUS & SHADOW TOKENS ────────────────────
+   Softer, rounder shapes give a warmer artisanal feel.      */
+:root {
+  --brand-radius:       14px;
+  --brand-radius-sm:     8px;
+  --brand-radius-pill: 999px;
+  --shadow:    0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+  --shadow-card-hover: 0 6px 28px rgba(196,98,45,0.13), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ─── 2. BACKGROUND TEXTURE ─────────────────────────────────
+   Very subtle warm noise‑like gradient on the html element   */
+html {
+  background: var(--bg);
+}
+body {
+  background:
+    radial-gradient(ellipse 140% 60% at 50% -10%, rgba(196,98,45,0.045) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 40% at 100% 80%, rgba(232,178,90,0.035) 0%, transparent 50%),
+    var(--bg);
+  min-height: 100dvh;
+}
+.dark body,
+.dark #login-screen {
+  background:
+    radial-gradient(ellipse 140% 60% at 50% -10%, rgba(196,98,45,0.06) 0%, transparent 55%),
+    var(--bg);
+}
+
+/* ─── 3. CARDS ───────────────────────────────────────────────
+   Lift + warm border on hover                               */
+.card,
+.dash-card,
+.day-card,
+.receta-card,
+.ts-card,
+.dash-widget {
+  border: 1px solid transparent;
+  transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease;
+}
+.card { border-color: var(--border); }
+.dash-card,
+.day-card { border-color: var(--border); }
+
+.dash-widget.clickable:hover,
+.receta-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: var(--accent-pale);
+}
+
+/* ─── 4. PRIMARY BUTTON — pill-like & more breathing room ───*/
+.btn-primary {
+  border-radius: var(--brand-radius-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 10px rgba(196,98,45,0.22);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 18px rgba(196,98,45,0.32);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: scale(0.97) translateY(0);
+  box-shadow: none;
+}
+
+/* ─── 5. FORM INPUTS — glow focus ring ──────────────────────*/
+.form-input:focus,
+.compra-inline-input:focus,
+.add-row input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-pale);
+  outline: none;
+}
+
+/* ─── 6. SECTION TITLES — larger, tighter, warmer ──────────*/
+.section-title {
+  font-size: 2.2rem;
+  letter-spacing: -0.03em;
+}
+@media (min-width: 768px) {
+  .section-title { font-size: 2.6rem; }
+}
+
+/* ─── 7. BOTTOM NAV — MOBILE: pill indicator ────────────────
+   Replace underline with a warm pill background              */
+@media (max-width: 767px) {
+  .nav-btn.active {
+    color: var(--accent);
+  }
+  .nav-btn.active::before {
+    /* Remove old 2px top line */
+    display: none;
+  }
+  .nav-btn.active .nav-icon {
+    background: var(--accent-pale);
+    border-radius: 10px;
+    padding: 2px 10px;
+  }
+}
+
+/* ─── 8. RECETA CARDS — full-bleed photo background ─────────
+   Photo fills the entire card; dark gradient overlay at bottom;
+   recipe name in white at the bottom.                        */
+.receta-card {
+  aspect-ratio: 1 / 1;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface2);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+}
+/* Dark gradient overlay — stronger at the bottom */
+.receta-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0)      0%,
+    rgba(0,0,0,0.08)  35%,
+    rgba(0,0,0,0.55)  70%,
+    rgba(0,0,0,0.78) 100%
+  );
+  z-index: 1;
+}
+/* No-photo variant: solid warm tinted overlay */
+.receta-card--no-photo .receta-card-overlay {
+  background: linear-gradient(
+    160deg,
+    rgba(196,98,45,0.12) 0%,
+    rgba(28,23,20,0.72) 100%
+  );
+}
+/* Text footer sits above the overlay */
+.receta-card-footer {
+  position: relative;
+  z-index: 2;
+  padding: 0.65rem 0.65rem 0.7rem;
+}
+.receta-card-name {
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+.receta-card-meta {
+  font-size: 0.66rem;
+  color: rgba(255,255,255,0.72);
+  margin-top: 0.18rem;
+}
+/* Action buttons — keep above overlay */
+.receta-edit-btn,
+.receta-delete-btn {
+  z-index: 3;
+}/* Legacy classes no longer rendered; reset to avoid side effects */
+.receta-photo-thumb { display: none; }
+.receta-card-body   { display: none; }
+/* ─── 9. DAY CARDS (Menú semanal) ──────────────────────────
+   Richer day name + today accent strip                       */
+.day-name,
+.cm-day-name {
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+.day-card.today {
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow-card-hover);
+}
+/* Accent left stripe on today's day header */
+.day-card.today .day-header {
+  background: linear-gradient(90deg, var(--accent-pale) 0%, var(--surface2) 100%);
+  border-bottom-color: rgba(196,98,45,0.18);
+}
+
+/* ─── 10. MEAL TEXT ─────────────────────────────────────────*/
+.meal-text,
+.cm-meal-text,
+.dash-menu-text {
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+/* ─── 11. MODAL SHEET — rounder top corners ─────────────────*/
+.modal-sheet {
+  border-radius: 22px 22px 0 0;
+}
+@media (min-width: 768px) {
+  .modal-sheet {
+    border-radius: var(--brand-radius);
+  }
+}
+
+/* ─── 12. TOPBAR — serif brand name ─────────────────────────*/
+.topbar-title {
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+/* ─── 13. DASHBOARD GREETING ────────────────────────────────*/
+.dash-greeting-name {
+  font-size: 3.2rem;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.dash-salute {
+  font-size: 0.67rem;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  opacity: 0.85;
+}
+.dash-greeting-date {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.4rem;
+}
+@media (min-width: 768px) {
+  .dash-greeting-name { font-size: 4rem; }
+}
+
+/* ─── 14. DASHBOARD SECTION HEADER ─────────────────────────*/
+.dash-section-title {
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+}
+
+/* ─── 15. PRIORITY PILLS (Tareas) ──────────────────────────
+   Rounder, cleaner pill appearance                           */
+.dash-prio-pill {
+  border-radius: var(--brand-radius-pill);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+.tarea-tag {
+  border-radius: var(--brand-radius-pill);
+}
+
+/* ─── 16. CATEGORY LABEL (Compra) ──────────────────────────*/
+.category-label {
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+}
+
+/* ─── 17. SKELETON SHIMMER — warmer tones ───────────────────*/
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 25%,
+    rgba(196,98,45,0.06) 50%,
+    var(--surface2) 75%
+  );
+  background-size: 1200px 100%;
+}
+
+/* ─── 18. FILTER CHIPS ──────────────────────────────────────*/
+.filter-chip.active {
+  box-shadow: 0 2px 8px rgba(196,98,45,0.22);
+}
+
+/* ─── 19. CALENDAR EVENT ITEM ───────────────────────────────*/
+.cal-event-time {
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+.cal-event-title {
+  font-size: 0.94rem;
+  font-weight: 500;
+}
+
+/* ─── 20. SCROLL SNAPPING & PADDING REFINEMENT ─────────────*/
+.view {
+  padding-bottom: 6rem; /* more breathing room above nav */
+}
+
+/* ─── 21. LOGIN — atmospheric gradient ─────────────────────*/
+#login-screen {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(196,98,45,0.09) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 30% at 80% 90%, rgba(232,178,90,0.06) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(255,200,140,0.04) 0%, transparent 30%),
+    var(--bg);
+}
+.login-logo {
+  width: 120px;
+  height: auto;
+  animation: loginIn 0.4s ease 0.05s both;
+}
+.login-tagline {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.login-ornament {
+  font-size: 0.42rem;
+  opacity: 0.7;
+}
+.login-title {
+  font-size: 3.6rem;
+}
+@media (min-width: 768px) {
+  .login-title { font-size: 4.6rem; }
+  .login-logo  { width: 140px; }
+}
+
+/* ─── Google button — terracota filled, pill shape ──────────*/
+.btn-google {
+  background: var(--accent);
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.95rem 1.5rem;
+  box-shadow: 0 4px 16px rgba(196,98,45,0.35), 0 1px 3px rgba(0,0,0,0.1);
+  justify-content: flex-start;
+  gap: 1rem;
+}
+.btn-google:hover {
+  background: var(--accent-dark);
+  border: none;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(196,98,45,0.42);
+}
+.btn-google-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── 23. MEAL SLOTS — card foto fullbleed 1:1 (solo móvil) ─*/
+
+@media (max-width: 767px) {
+  .meal-slot:not(.meal-slot-blank),
+  .cm-day-slot:not(.cm-day-slot-blank) {
+    aspect-ratio: 1 / 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 0.45rem;
+    background-size: cover;
+    background-position: center;
+    background-clip: content-box;
+    background-color: var(--surface2);
+    border-radius: var(--brand-radius);
+    border: none !important;
+    overflow: hidden;
+  }
+  .meal-slot:first-child { border-right: none; }
+  .cm-day-slot + .cm-day-slot { border-left: none !important; }
+
+  .meal-slot:not(.meal-slot-blank)::after,
+  .cm-day-slot:not(.cm-day-slot-blank)::after {
+    content: '';
+    position: absolute;
+    inset: 0.45rem;
+    border-radius: max(0px, calc(var(--brand-radius) - 0.45rem));
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0) 0%, rgba(0,0,0,0.08) 40%,
+      rgba(0,0,0,0.52) 68%, rgba(0,0,0,0.76) 100%);
+    pointer-events: none; z-index: 1;
+  }
+  .meal-slot:not(.meal-slot-blank):not(.has-photo)::after,
+  .cm-day-slot:not(.cm-day-slot-blank):not(.has-photo)::after {
+    background: linear-gradient(160deg, rgba(196,98,45,0.08) 0%, rgba(28,23,20,0.62) 100%);
+  }
+
+  .meal-slot:not(.meal-slot-blank) .meal-slot-content,
+  .cm-day-slot:not(.cm-day-slot-blank) .cm-slot-content {
+    flex: 0 0 auto; position: relative; z-index: 2;
+    padding: 0.55rem 0.65rem 0.6rem; gap: 0.2rem;
+  }
+  .meal-slot:not(.meal-slot-blank) .meal-type,
+  .cm-day-slot:not(.cm-day-slot-blank) .cm-day-slot-type  { color: rgba(255,255,255,0.7); }
+  .meal-slot:not(.meal-slot-blank) .meal-text,
+  .cm-day-slot:not(.cm-day-slot-blank) .cm-meal-text      { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.45); }
+  .meal-slot:not(.meal-slot-blank) .meal-empty,
+  .cm-day-slot:not(.cm-day-slot-blank) .cm-meal-empty     { color: rgba(255,255,255,0.5); font-style: italic; }
+  .meal-slot:not(.meal-slot-blank) .meal-add-icon,
+  .cm-day-slot:not(.cm-day-slot-blank) .meal-add-icon     { color: rgba(255,255,255,0.45); z-index: 2; }
+  .meal-slot:not(.meal-slot-blank):hover,
+  .cm-day-slot:not(.cm-day-slot-blank):hover              { background-color: var(--surface2); }
+  .meal-slot:not(.meal-slot-blank):hover .meal-add-icon,
+  .cm-day-slot:not(.cm-day-slot-blank):hover .meal-add-icon { color: rgba(255,255,255,0.85); }
+}
+
+/* ─── 24. DASHBOARD MENÚ DE HOY — card fullbleed 1:1 (solo móvil) ─*/
+
+@media (max-width: 767px) {
+  .dash-menu-meals {
+    padding: 0.45rem;
+    gap: 0.45rem;
+  }
+  .dash-menu-slot {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--surface2);
+    border-radius: calc(var(--brand-radius) - 2px);
+  }
+  .dash-menu-slot + .dash-menu-slot { border-left: none; }
+  .dash-menu-avatar { display: none !important; }
+
+  /* Overlay solo cuando hay foto, cubre exactamente el slot */
+  .dash-menu-slot.has-photo::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0) 0%, rgba(0,0,0,0.08) 40%,
+      rgba(0,0,0,0.52) 68%, rgba(0,0,0,0.76) 100%);
+    pointer-events: none; z-index: 1;
+  }
+  .dash-menu-content {
+    position: relative; z-index: 2;
+    flex: 0 0 auto;
+    padding: 0.55rem 0.75rem 0.65rem; gap: 0.18rem;
+  }
+  .dash-menu-slot.has-photo .dash-menu-type  { color: rgba(255,255,255,0.7); }
+  .dash-menu-slot.has-photo .dash-menu-text  { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.45); }
+  .dash-menu-slot.has-photo .dash-menu-empty { color: rgba(255,255,255,0.5); }
+}
+
+
+/* ─── 22. DARK MODE — consistent accent overrides ───────────*/
+.dark .day-card.today .day-header {
+  background: linear-gradient(90deg, var(--accent-pale) 0%, var(--surface2) 100%);
+}
+.dark .btn-primary {
+  box-shadow: 0 2px 10px rgba(232,132,90,0.22);
+}
+.dark .btn-primary:hover {
+  box-shadow: 0 4px 18px rgba(232,132,90,0.28);
+}
+/* ─── 25. USER DRAWER — lista artesanal ─────────────────────*/
+#user-drawer {
+  background: var(--bg);
+}
+
+/* Header */
+.drawer-header {
+  border-bottom: none;
+  padding: 1.5rem 1.25rem 1.25rem;
+}
+.drawer-avatar-wrap {
+  flex-shrink: 0;
+}
+.drawer-avatar {
+  width: 54px;
+  height: 54px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+/* Section titles */
+.drawer-section-title {
+  padding: 1.1rem 1.25rem 0.4rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.25rem;
+}
+.drawer-section-title:first-of-type {
+  border-top: none;
+  margin-top: 0;
+}
+
+/* All items: full-width rows with bottom separator */
+.drawer-item {
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 0.95rem 1.25rem;
+  font-size: 0.92rem;
+}
+.drawer-item:last-of-type {
+  border-bottom: none;
+}
+
+/* Nav items: push chevron to the right */
+.drawer-item--nav {
+  justify-content: space-between;
+}
+.drawer-chevron {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  margin-left: auto;
+}
+/* Keep icon + label together, chevron at end */
+.drawer-item--nav > span:first-child {
+  display: flex;
+  align-items: center;
+  margin-right: 0.65rem;
+}
+.drawer-item--nav > span:nth-child(2) {
+  flex: 1;
+}
+
+/* Danger item (cerrar sesión) */
+.drawer-item--danger,
+.drawer-item--danger .drawer-chevron {
+  color: var(--danger);
+}
+.drawer-item--danger:hover {
+  background: rgba(193,68,14,0.06);
+}
+
+/* Theme row (Tema actual) */
+.drawer-theme-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition);
+}
+.drawer-theme-row:hover { background: var(--surface2); }
+.drawer-theme-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+/* Checkmark inside the circle */
+.drawer-theme-circle::after {
+  content: '✓';
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.drawer-theme-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+}
+.drawer-theme-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.drawer-theme-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.drawer-theme-row .drawer-chevron {
+  margin-left: 0;
+}
+
+/* Hide old swatch grid inside drawer */
+#drawer-swatches { display: none !important; }
+
+/* Hide old footer */
+.drawer-footer { display: none !important; }
+
+/* ─── 26. PRODUCTOS TEMPORADA — selects móvil sin overflow ─*/
+.ts-mobile-selects-row {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.ts-mobile-selects-row select {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50%;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .ts-mobile-selects-row select {
+    font-size: 0.82rem;
+    padding: 0.6rem 0.35rem;
+  }
+}
+
+/* ─── 27. PRODUCTOS TEMPORADA — tarjetas móvil rediseñadas ─*/
+@media (max-width: 600px) {
+  .ts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .ts-card {
+    padding: 10px 10px 8px;
+    gap: 5px;
+    border-radius: var(--brand-radius);
+    border-width: 1.5px;
+  }
+
+  .ts-card-top {
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .ts-emoji {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  /* Badge: pill compacta, alineada arriba a la derecha */
+  .ts-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    max-width: none;
+    overflow: visible;
+    margin-left: auto;
+    align-self: flex-start;
+    flex-shrink: 0;
+  }
+
+  .ts-nombre {
+    font-size: 0.98rem;
+    font-weight: 700;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  .ts-cat-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 20px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ts-meses-bar {
+    gap: 2px;
+    margin-top: 4px;
+  }
+
+  .ts-m {
+    flex: 1;
+    width: auto;
+    height: 5px;
+    border-radius: 3px;
+  }
+
+  .ts-m.now {
+    outline: 2px solid var(--accent);
+    outline-offset: 1.5px;
+  }
+}
+
+/* ─── 28. MEAL SLOTS & DASH — overlay + texto abajo (desktop) ─*/
+
+/* Eliminar resaltado de "hoy" en menú semanal (todas las resoluciones) */
+.cm-day-card.today {
+  box-shadow: var(--shadow) !important;
+  border: none !important;
+}
+.cm-day-card.today .cm-day-card-header {
+  background: transparent !important;
+  border-bottom-color: var(--border) !important;
+}
+.cm-day-card.today .cm-day-name { color: var(--text) !important; }
+.cm-day-card.today .cm-day-date { color: var(--text-muted) !important; opacity: 1 !important; }
+.cm-day-slot.today { border-bottom: none !important; }
+
+@media (min-width: 768px) {
+  /* ── Comidas: menú semanal ─────────────────────────────── */
+  .meal-slot:not(.meal-slot-blank) {
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    min-height: 130px;
+    padding: 0.5rem;
+    background-size: 100% auto;
+    background-position: center;
+    background-clip: content-box;
+    background-color: var(--surface);
+    border-radius: var(--brand-radius);
+    border-right: none !important;
+  }
+  /* Overlay solo cuando hay foto */
+  .meal-slot.has-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0.5rem;
+    border-radius: max(0px, calc(var(--brand-radius) - 3px));
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0) 25%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.78) 100%);
+    pointer-events: none; z-index: 1;
+  }
+  .meal-slot:not(.meal-slot-blank) .meal-slot-content {
+    flex: 0 0 auto; position: relative; z-index: 2;
+  }
+  /* Texto blanco solo con foto */
+  .meal-slot.has-photo .meal-type  { color: rgba(255,255,255,0.72); }
+  .meal-slot.has-photo .meal-text  { color: #fff; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+  .meal-slot.has-photo .meal-empty { color: rgba(255,255,255,0.52); font-style: italic; }
+  .meal-slot.has-photo .meal-add-icon { color: rgba(255,255,255,0.45); z-index: 2; }
+  .meal-slot.has-photo:hover .meal-add-icon { color: rgba(255,255,255,0.9); }
+  .meal-slot:not(.meal-slot-blank):hover { background-color: var(--surface); }
+
+  /* ── Calendario comidas: day-slot ──────────────────────── */
+  .cm-day-slot:not(.cm-day-slot-blank) {
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    min-height: 160px;
+    padding: 0.5rem;
+    background-size: 100% auto;
+    background-position: center;
+    background-clip: content-box;
+    background-color: var(--surface);
+    border-radius: var(--brand-radius);
+  }
+  .cm-day-slot + .cm-day-slot { border-left: none !important; }
+  /* Overlay solo cuando hay foto */
+  .cm-day-slot.has-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0.5rem;
+    border-radius: max(0px, calc(var(--brand-radius) - 3px));
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0) 25%, rgba(0,0,0,0.50) 65%, rgba(0,0,0,0.72) 100%);
+    pointer-events: none; z-index: 1;
+  }
+  .cm-day-slot:not(.cm-day-slot-blank) .cm-slot-content {
+    flex: 0 0 auto; position: relative; z-index: 2;
+  }
+  /* Texto blanco solo con foto */
+  .cm-day-slot.has-photo .cm-day-slot-type { color: rgba(255,255,255,0.72); }
+  .cm-day-slot.has-photo .cm-meal-text     { color: #fff; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+  .cm-day-slot.has-photo .cm-meal-empty    { color: rgba(255,255,255,0.52); font-style: italic; }
+  .cm-day-slot:not(.cm-day-slot-blank):hover { background-color: var(--surface); }
+  .cm-day-avatar { display: none !important; }
+
+  /* ── Dashboard: menú de hoy ────────────────────────────── */
+  /* Separación visual entre los dos slots y respecto al borde de la card */
+  .dash-menu-meals {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  .dash-menu-slot {
+    position: relative;
+    overflow: hidden;             /* recorta la bg-image a los bordes redondeados */
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    min-height: 140px;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--surface2);
+    border-radius: calc(var(--brand-radius) - 2px);
+  }
+  .dash-menu-slot + .dash-menu-slot { border-left: none !important; }
+  .dash-menu-slot .dash-menu-content {
+    flex: 0 0 auto;
+    position: relative; z-index: 2;
+    justify-content: flex-start;
+  }
+  /* Overlay sobre la imagen (cubre exactamente el slot = la imagen) */
+  .dash-menu-slot.has-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0) 25%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.78) 100%);
+    pointer-events: none; z-index: 1;
+  }
+  /* Texto blanco solo con foto */
+  .dash-menu-slot.has-photo .dash-menu-type  { color: rgba(255,255,255,0.72); }
+  .dash-menu-slot.has-photo .dash-menu-text  { color: #fff; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+  .dash-menu-slot.has-photo .dash-menu-empty { color: rgba(255,255,255,0.52); font-style: italic; }
+  .dash-menu-avatar { display: none !important; }
+}
+
+/* ─── 29. CALENDAR PICKER — lista de calendarios ────────────*/
+.cal-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--transition);
+  position: relative;
+}
+.cal-picker-row:last-child { border-bottom: none; }
+.cal-picker-row:hover { background: var(--accent-pale); }
+.cal-picker-row.is-selected { background: var(--accent-pale); }
+
+.cal-picker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cal-picker-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-picker-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--accent-pale);
+  color: var(--accent);
+  border-radius: 99px;
+  padding: 0.05rem 0.4rem;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+}
+
+.cal-picker-email {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.cal-picker-check {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.cal-picker-row.is-selected .cal-picker-check { opacity: 1; }

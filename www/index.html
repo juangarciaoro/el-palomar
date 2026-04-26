@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#C4622D">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title id="page-title">El Palomar</title>
@@ -11,25 +12,28 @@
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<!-- Design tokens (customize brand variables and self-hosted fonts in css/design-tokens.css) -->
+<link rel="stylesheet" href="css/design-tokens.css">
 <link rel="stylesheet" href="css/styles.css">
-<link rel="preload" href="icons.svg" as="image" type="image/svg+xml">
+<!-- Brand polish: visual identity layer (shapes, spacing, interactions) -->
+<link rel="stylesheet" href="css/brand-polish.css">
 </head>
 <body>
 <div id="app">
 
   <!-- ─── LOGIN ───────────────────────────────────────── -->
   <div id="login-screen">
-    <svg class="login-glyph icon" viewBox="0 0 24 24" aria-hidden="true">
-      <use href="icons.svg#i-home"></use>
-    </svg>
+    <img src="logo-outline.svg" class="login-logo" alt="" aria-hidden="true">
     <div class="login-identity">
       <h1 class="login-title" id="login-hogar-nombre">El Palomar</h1>
       <div class="login-ornament" aria-hidden="true">◆</div>
-      <p class="login-tagline">Donde empieza el día.</p>
+      <p class="login-tagline">Todo lo que pasa en casa</p>
     </div>
     <div class="login-cta">
       <button class="btn-google" onclick="loginWithGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20">
+        <span class="btn-google-icon" aria-hidden="true">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="18" height="18">
+        </span>
         Continuar con Google
       </button>
       <p class="login-legal">Al continuar, sincronizas tu cuenta con el hogar compartido.</p>
@@ -39,9 +43,7 @@
 
   <!-- ─── LOADING SCREEN ─────────────────────────────── -->
   <div id="loading-screen" style="display:none">
-    <svg class="loading-glyph icon" viewBox="0 0 24 24" aria-hidden="true">
-      <use href="icons.svg#i-home"></use>
-    </svg>
+    <img src="logo-outline.svg" class="loading-glyph" alt="" aria-hidden="true">
     <p class="loading-label" id="loading-hogar-nombre">El Palomar</p>
     <div class="loading-dots" aria-label="Cargando">
       <span></span><span></span><span></span>
@@ -472,6 +474,25 @@
     </div>
   </div>
 
+  <!-- Modal: Selector de calendario Google -->
+  <div class="modal-overlay" id="modal-cal-picker" onclick="closeModal('modal-cal-picker', event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Elegir calendario</div>
+      <div id="cal-picker-loading" style="display:none;text-align:center;padding:2rem 1rem;color:var(--text-muted);font-size:0.9rem">
+        Cargando calendarios…
+      </div>
+      <div id="cal-picker-error" style="display:none;padding:1.25rem;text-align:center">
+        <div style="color:var(--text-muted);font-size:0.88rem;margin-bottom:0.85rem" id="cal-picker-error-msg">Error al cargar los calendarios.</div>
+        <button class="btn-secondary" style="font-size:0.85rem" onclick="openCalendarPicker()">Reintentar</button>
+      </div>
+      <div id="cal-picker-list" style="display:none"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('modal-cal-picker')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Añadir receta -->
   <div class="modal-overlay" id="modal-receta" onclick="closeModal('modal-receta', event)">
     <div class="modal-sheet">
@@ -662,37 +683,48 @@
   <div id="drawer-overlay" onclick="closeUserDrawer()"></div>
   <aside id="user-drawer">
     <div class="drawer-header">
-      <span class="drawer-avatar" id="drawer-avatar">?</span>
+      <div class="drawer-avatar-wrap">
+        <span class="drawer-avatar" id="drawer-avatar">?</span>
+      </div>
       <div class="drawer-user-info">
         <div class="drawer-name" id="drawer-name">—</div>
         <div class="drawer-email" id="drawer-email"></div>
       </div>
       <button class="drawer-close" onclick="closeUserDrawer()">✕</button>
     </div>
-    <div class="drawer-section-title"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-palette"></use></svg> Personalización</div>
+    <div class="drawer-section-title">Personalización</div>
     <div class="drawer-item" style="justify-content:space-between;cursor:default">
       <span style="display:inline-flex;align-items:center;gap:0.35rem"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-moon"></use></svg> Modo oscuro</span>
       <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Alternar modo oscuro">
         <span class="dark-toggle-thumb"></span>
       </button>
     </div>
+    <button class="drawer-theme-row" onclick="closeUserDrawer(); setTimeout(openColorPicker, 280)">
+      <span class="drawer-theme-circle" id="drawer-theme-circle"></span>
+      <span class="drawer-theme-info">
+        <span class="drawer-theme-name" id="drawer-theme-name">Terracota</span>
+        <span class="drawer-theme-label">Tema actual</span>
+      </span>
+      <span class="drawer-chevron">›</span>
+    </button>
     <div class="color-swatch-grid" id="drawer-swatches" style="padding:0 1rem 0.5rem"></div>
-    <div class="drawer-section-title"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-settings"></use></svg> Administración</div>
-    <button class="drawer-item" onclick="closeUserDrawer(); showAjustesHogarView(); switchView('ajustes-hogar')">
-      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-home"></use></svg></span><span>Ajustes del hogar</span>
+    <div class="drawer-section-title">Administración</div>
+    <button class="drawer-item drawer-item--nav" onclick="closeUserDrawer(); showAjustesHogarView(); switchView('ajustes-hogar')">
+      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-home"></use></svg></span><span>Ajustes del hogar</span><span class="drawer-chevron">›</span>
     </button>
-    <button class="drawer-item" onclick="closeUserDrawer(); switchView('productos')">
-      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-package"></use></svg></span><span>Catálogo de productos</span>
+    <button class="drawer-item drawer-item--nav" onclick="closeUserDrawer(); switchView('productos')">
+      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-package"></use></svg></span><span>Catálogo de productos</span><span class="drawer-chevron">›</span>
     </button>
-    <button class="drawer-item" onclick="closeUserDrawer(); switchView('productos-temporada')">
-      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-leaf"></use></svg></span><span>Productos de temporada</span>
+    <button class="drawer-item drawer-item--nav" onclick="closeUserDrawer(); switchView('productos-temporada')">
+      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-leaf"></use></svg></span><span>Productos de temporada</span><span class="drawer-chevron">›</span>
     </button>
-    <button class="drawer-item" onclick="closeUserDrawer(); switchView('categorias')">
-      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-tag"></use></svg></span><span>Categorías de productos</span>
+    <button class="drawer-item drawer-item--nav" onclick="closeUserDrawer(); switchView('categorias')">
+      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-tag"></use></svg></span><span>Categorías de productos</span><span class="drawer-chevron">›</span>
     </button>
-    <div class="drawer-footer">
-      <button class="drawer-logout" onclick="closeUserDrawer(); logout()">Cerrar sesión</button>
-    </div>
+    <div class="drawer-section-title">Cuenta</div>
+    <button class="drawer-item drawer-item--nav drawer-item--danger" onclick="closeUserDrawer(); logout()">
+      <span><svg class="icon" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><use href="icons.svg#i-logout"></use></svg></span><span>Cerrar sesión</span><span class="drawer-chevron">›</span>
+    </button>
   </aside>
 
 </div>
